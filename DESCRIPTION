@@ -1,0 +1,38 @@
+Package: PlotR
+Title: Plot things
+Version: 1.0.1
+Authors@R: c(
+    person("Marcus", "Gross", email = "marcus.gross@inwt-statistics.de", role = c("aut", "cre")),
+    person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
+    person("Andreas", "Neudecker", email = "andreas.neudecker@inwt-statistics.de", role = c("ctb")),
+    person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("ctb"))
+    )
+Maintainer: Marcus Gross <marcus.gross@inwt-statistics.de>
+Description: Plot things.
+Depends: R (>= 3.5.0)
+Imports:
+  colourpicker,
+  dplyr,
+  DT,
+  futile.logger,
+  jsonlite,
+  magrittr,
+  mgcv,
+  openxlsx,
+  readxl,
+  readr,
+  Rfast,
+  rlang,
+  shiny,
+  shinyalert,
+  shinyjs,
+  shinythemes,
+  tibble,
+  zip
+License: closed
+Encoding: UTF-8
+LazyData: true
+Suggests:
+  lintr (>= 1.0.2),
+  testthat
+RoxygenNote: 7.1.1
