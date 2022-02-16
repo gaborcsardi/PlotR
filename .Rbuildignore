@@ -4,3 +4,4 @@
 ^\.dockerignore$
 ^Dockerfile$
 ^Jenkinsfile$
+^LICENSE\.md$
