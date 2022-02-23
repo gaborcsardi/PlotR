@@ -5,3 +5,6 @@
 ^Dockerfile$
 ^Jenkinsfile$
 ^LICENSE\.md$
+^deploy\.sh$
+^\..*$
+^bin$

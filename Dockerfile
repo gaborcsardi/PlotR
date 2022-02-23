@@ -1,6 +1,4 @@
-FROM inwt/r-shiny:4.0.1
-
-RUN apt-get update && apt-get install -y libgsl-dev
+FROM ghcr.io/pandora-isomemo/base-image:latest
 
 ADD . .
 
