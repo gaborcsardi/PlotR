@@ -1,5 +1,7 @@
 # MPI-PlotR-App
 
+Access beta version: https://isomemoapp.com/app/plotr-beta
+
 ## Naming Conventions in R
 
 - Numbers as Prefix. Grouped into files with same type of functionality
