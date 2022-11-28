@@ -29,12 +29,11 @@ checkErrorNoNumericColumns <- reactive({
   }
 })
 
-selectNumericCols <- function(data) {
+toNumericCols <- function(data) {
   if (is.null(data)) return(NULL)
 
   data <- data[, findNumericCol(data), drop = FALSE]
-
-  as.data.frame(sapply(data, as.numeric))
+  suppressWarnings(as.data.frame(sapply(data, as.numeric)))
 }
 
 findNumericCol <- function(df) {

@@ -7,56 +7,64 @@ multiplePlotsUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    #useShinyjs(),
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    selectInput(ns("activePlots"),
                                label = "Select saved plots",
                                choices = NULL,
                                multiple = TRUE#,
                                #selectize = TRUE
                    ),
-                   tags$hr(),
+                   tags$br(),
                    sliderInput(ns("previewWidth"),
                                label = "Width of preview",
-                               min = 400, max = 2000, value = 1400, step = 10),
+                               min = 400, max = 2000, value = 1100, step = 10),
                    sliderInput(ns("previewHeight"),
                                 label = "Height of preview",
                                 min = 400, max = 2000, value = 800, step = 10),
                    tags$br(),
-                   h4("Combine plots"),
-                   selectInput(ns("combiType"),
-                               label = NULL,
-                               choices = c("all-in-one" = "joinedPlot",
-                                           "grid" = "fullGrid"),
-                               selected = "fullGrid"),
-                   conditionalPanel(
-                     condition = "input.combiType == 'fullGrid'",
-                     ns = ns,
-                     numericInput(inputId = ns("nGridCols"),
-                                 label = "Number of columns",
-                                 min = 1, max = 8, value = 1, step = 1)),
-                   tags$hr(),
-                   conditionalPanel(
-                     condition = "input.combiType == 'joinedPlot'",
-                     ns = ns,
-                     h4("Adjust margins"),
-                     selectMarginUI(ns("margins"))
-                   ),
-                   tags$hr(),
-                   h4("Hide axes"),
-                   selectInput(ns("xAxisToHide"),
-                               label = "Hide x axis of selected plot",
-                               choices = NULL,
-                               multiple = TRUE),
-                   selectInput(ns("yAxisToHide"),
-                               label = "Hide y axis of selected plot",
-                               choices = NULL,
-                               multiple = TRUE)
+                   fluidRow(
+                     column(4,
+                            selectInput(ns("combiType"),
+                                        label = "Combine plots",
+                                        choices = c("all-in-one" = "joinedPlot",
+                                                    "grid" = "fullGrid"),
+                                        selected = "fullGrid")
+                     ),
+                     column(8,
+                            conditionalPanel(
+                              condition = "input.combiType == 'fullGrid'",
+                              ns = ns,
+                              numericInput(inputId = ns("nGridCols"),
+                                           label = "Number of columns",
+                                           min = 1, max = 8, value = 1, step = 1)),
+                            conditionalPanel(
+                              condition = "input.combiType == 'joinedPlot'",
+                              ns = ns,
+                              selectMarginUI(ns("margins"))
+                            )
+                     )),
+                   tags$br(),
+                   fluidRow(
+                     column(6,
+                            selectInput(ns("xAxisToHide"),
+                                        label = "Hide x axis of plots",
+                                        choices = NULL,
+                                        multiple = TRUE)
+                     ),
+                     column(6,
+                            selectInput(ns("yAxisToHide"),
+                                        label = "Hide y axis of plots",
+                                        choices = NULL,
+                                        multiple = TRUE)
+                     ))
       ),
       mainPanel(width = 8,
-                h4("View Multiple Plots"),
+                fluidRow(column(9, h4("View Multiple Plots")),
+                         column(3,
+                                align = "right",
+                                plotExportButton(ns("export")))),
+                tags$br(),
                 p(strong("Notes:"), "Adjust the format of a single plot in the tab Style Plot.",
                   "Increase the width/height if figure margins become to large when selecting many plots."),
                 conditionalPanel(
@@ -66,9 +74,6 @@ multiplePlotsUI <- function(id, title) {
                     "plot is determined by the first selected single plot. ",
                     "The axes of the first selected plot will be furthest inside.")),
                 plotOutput(ns("multiPlot"), height = "800px", width = "100%", inline = TRUE)
-      ),
-      sidebarPanel(width = 2,
-                   div(plotExportButton(ns("export")))
       )
     )
   )
@@ -79,7 +84,7 @@ selectMarginUI <- function(id) {
   ns <- NS(id)
   div(
     selectInput(ns("side"),
-                label = "Select plot side",
+                label = "Adjust margin",
                 choices = c("bottom" = "1", "left" = "2", "top" = "3", "right" = "4"),
                 selected = "1"),
     conditionalPanel(
@@ -151,19 +156,15 @@ multiplePlots <- function(input, output, session, savedData) {
   output$multiPlot <- renderPlot({
     req(names(activePlotsData()))
 
-    tryCatch(
-      withCallingHandlers(
-        makeMultiPlot(activePlotsData(),
-                      nMarginLines = nMarginLines(),
-                      combiType = input$combiType,
-                      nGridCols = input$nGridCols,
-                      xAxisToHide = input$xAxisToHide,
-                      yAxisToHide = input$yAxisToHide
-        ),
-        message = function(m) showNotification(m$message, type = "message"),
-        warning = function(w) showNotification(w$message, type = "warning")
-      ),
-      error = function(e) shinyalert("Error!", e$message, type = "error")
+    tryCatchWithMessage(
+      makeMultiPlot(
+        activePlotsData(),
+        nMarginLines = nMarginLines(),
+        combiType = input$combiType,
+        nGridCols = input$nGridCols,
+        xAxisToHide = input$xAxisToHide,
+        yAxisToHide = input$yAxisToHide
+      )
     )
 
     values$plot <- recordPlot()

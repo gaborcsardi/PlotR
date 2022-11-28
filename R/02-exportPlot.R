@@ -1,4 +1,6 @@
-plotExport <- function(input, output, session, plotObj, plotWidth = 1280, plotHeight = 800){
+plotExport <- function(input, output, session, plotObj,
+                       plotWidth = reactive(1280),
+                       plotHeight = reactive(800)){
   observeEvent(input$export, {
     showModal(modalDialog(
       title = "Export Graphic",

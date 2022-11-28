@@ -7,9 +7,8 @@ stylePlotUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    selectInput(ns("activePlot"), label = "Select a saved plot",
                                choices = NULL, selected = NULL),
                    tags$hr(),
@@ -18,9 +17,11 @@ stylePlotUI <- function(id, title) {
                    deletePlotUI(ns("deletingPlot"), "Delete plot(s)")
       ),
       mainPanel(width = 8,
-                h4("Adjust the Plot Style"),
-                p(strong("Notes:"), "Please, keep the default sizes of titles and axes for optimal display in an ",
-                  em("all-in-one-plot"), "."),
+                fluidRow(column(9, h4("Adjust the Plot Style")),
+                         column(3,
+                                align = "right",
+                                plotExportButton(ns("export"))
+                         )),
                 plotOutput(ns("styledPlot")),
                 tags$hr(),
                 fluidRow(
@@ -57,6 +58,9 @@ stylePlotUI <- function(id, title) {
                                      value = NULL),
                          sliderInput(ns("textSize"), label = "Text size",
                                      value = 1.2, min = 0.1, max = 5, step = 0.1),
+                         p(strong("Note:"), "Changing the default sizes of titles and axes might",
+                           "lead to not optimal sizes in an ",
+                           em("all-in-one-plot"), "in the \"Multiple Plots\" tab."),
                   ),
                   column(3,
                          h4("Data Points"),
@@ -116,12 +120,6 @@ stylePlotUI <- function(id, title) {
                                      min = 0, max = 20, value = 2)
                   )
                 )
-      ),
-      sidebarPanel(width = 2,
-                   # dataExportButton(ns("exportData")),
-                   # tags$hr(),
-                   div(plotExportButton(ns("export"))),
-                   tags$hr()
       )
     )
   )

@@ -7,10 +7,8 @@ multiplePredictionsUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    #useShinyjs(),
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    selectInput(ns("activePlots"),
                                label = "Select saved plots",
                                choices = NULL,
@@ -40,12 +38,19 @@ multiplePredictionsUI <- function(id, title) {
                     tags$br(),
                     tableOutput(ns("correlationOfModels"))
                   ),
-
                   tabPanel(
                     "Predict Data",
                     value = ns("predictData"),
-
-                    h4("Calculate Predictions or Derive Explanatory Variables for Multiple Graphs"),
+                    fluidRow(column(8,
+                                    h4("Calculate Predictions or Derive Explanatory Variables for Multiple Graphs")
+                                    ),
+                             column(4,
+                                    align = "right",
+                                    dataExportButton(ns("exportPredictedY"),
+                                                     title = "Export Predicted Y"),
+                                    dataExportButton(ns("exportDerivedX"),
+                                                     title = "Export Derived X")
+                                    )),
                     checkboxInput(ns("useUploadedData"),
                                   label = "Use uploaded data",
                                   value = FALSE),
@@ -83,6 +88,7 @@ multiplePredictionsUI <- function(id, title) {
                                tags$br(),tags$br(),tags$br(),tags$br(),tags$br(),tags$br(),tags$br(),
                                actionButton(ns("predictYUploaded"), "Predict Y")),
                         column(3,
+                               offset = 1,
                                h4("Derive Explanatory"),
                                selectColumnsUI(id = ns("moreYUploaded"), label = "y"),
                                # no sampling here, we have a list of values
@@ -94,32 +100,31 @@ multiplePredictionsUI <- function(id, title) {
                     tags$hr(),
                     fluidRow(
                       column(12,
+                             fluidRow(column(6, h4("Predicted Response")),
+                                      column(6,
+                                             align = "right",
+                                             checkboxInput(ns("aggPrediction"),
+                                                           label = "If several points show mean over x per plot for all columns.",
+                                                           value = TRUE,
+                                                           width = "100%")
+                                             )),
                              DTOutput(ns("prediction")),
-                             checkboxInput(ns("aggPrediction"),
-                                           label = "If several points show mean over x per plot for all columns.",
-                                           value = TRUE),
-                             tags$br(),
-                             DTOutput(ns("derivedX")),
-                             checkboxInput(ns("aggExplanatory"),
-                                           label = "If several points show mean over y per plot for all columns.",
-                                           value = TRUE)
+                             tags$hr(),
+                             fluidRow(column(6, h4("Derived Explanatory")),
+                                      column(6,
+                                             align = "right",
+                                             checkboxInput(ns("aggExplanatory"),
+                                                           label = "If several points show mean over y per plot for all columns.",
+                                                           value = TRUE,
+                                                           width = "100%")
+                                      )),
+                             DTOutput(ns("derivedX"))
                       )
                     )
 
                   )
                   )
 
-      ),
-      sidebarPanel(width = 2,
-                   conditionalPanel(
-                     condition = "input.multiPlotsTabs == 'multiplePreds-predictData'",
-                     ns = ns,
-                     dataExportButton(ns("exportPredictedY"),
-                                      title = "Export Predicted Y"),
-                     tags$hr(),
-                     dataExportButton(ns("exportDerivedX"),
-                                      title = "Export Derived X")
-                   )
       )
     )
   )
@@ -228,10 +233,15 @@ multiplePredictions <- function(input, output, session, savedData, loadedFiles) 
 
   activeFile <- reactive({
     req(names(loadedFiles()))
-    selectNumericCols(loadedFiles()[[input$activeFile]])
+    toNumericCols(loadedFiles()[[input$activeFile]])
   })
 
-  moreXColumns <- callModule(selectColumns, id = "moreXUploaded", data = activeFile, datSettings = reactiveVal(NULL))
+  moreXColumns <- callModule(
+    selectColumns,
+    id = "moreXUploaded",
+    colNames = reactive(colnames(toNumericCols(activeFile()))),
+    datSettings = reactiveVal(defaultColSelection(colnames(activeFile())))
+    )
 
   observeEvent(input$predictYUploaded, {
     checkReq(input$activePlots, label = "Please select saved plot(s).")
@@ -296,7 +306,12 @@ multiplePredictions <- function(input, output, session, savedData, loadedFiles) 
 
   # derive explanatory  uploaded ####
 
-  moreYColumns <- callModule(selectColumns, id = "moreYUploaded", data = activeFile, datSettings = reactiveVal(NULL))
+  moreYColumns <- callModule(
+    selectColumns,
+    id = "moreYUploaded",
+    colNames = reactive(colnames(activeFile())),
+    datSettings = reactiveVal(defaultColSelection(colnames(toNumericCols(activeFile()))))
+    )
 
   observeEvent(input$deriveXUploaded, {
     checkReq(input$activePlots, label = "Please select saved plot(s).")

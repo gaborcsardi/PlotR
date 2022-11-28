@@ -13,6 +13,7 @@ utils::globalVariables(c("standardizedX", "Date3"))
 #' @param modelParameters (list) list of settings for the model
 getPlotValues <- function(plotValues, activeFile, activeFileData, dataSelection,
                           modelParameters){
+  plotValues$modelData <- NULL
   plotValues$predictedData <- NULL
 
   plotValues$activeFile <- activeFile
@@ -27,9 +28,16 @@ getPlotValues <- function(plotValues, activeFile, activeFileData, dataSelection,
   plotValues$selectedData <-
     activeFileData[, unlist(c(xSelection$colNames, ySelection$colNames))]
 
-  if (any(is.na(plotValues$selectedData))) {
+  if (any(!sapply(plotValues$selectedData, is.numeric))) {
+    # transform to numeric
+    plotValues$selectedData <- toNumericCols(plotValues$selectedData)
+  }
+
+  if (!is.null(plotValues$selectedData) && any(is.na(plotValues$selectedData))) {
     plotValues$selectedData <- na.omit(plotValues$selectedData)
   }
+
+  if (is.null(plotValues$selectedData)) return(plotValues)
 
   plotValues$selectedData <- addColumnDataOutlier(
     selectedData = plotValues$selectedData,
@@ -49,6 +57,8 @@ getPlotValues <- function(plotValues, activeFile, activeFileData, dataSelection,
     ySelection,
     plotValues$modelParameters
   )
+
+  if (is.null(plotValues$modelData$modelOutput)) return(plotValues)
 
   plotValues$predictedData <- list(
     evenlyOnX = predictSample(
@@ -71,7 +81,7 @@ getPlotValues <- function(plotValues, activeFile, activeFileData, dataSelection,
     credPercent = xSelection$credPercent,
     estimation = getXVarEvenly(m = prepData$X,
                                si = prepData$XUncertainty)
-    )
+  )
 
   plotValues
 }
@@ -137,24 +147,19 @@ fitModel <- function(prepData,
   sdVar <- modelParameters$sdVar
   const <- modelParameters$const
 
-  tryCatch(
-    fitPlotRModelMC(prepData,
-                    K = K, burnin = burnin,
-                    iter = iter, penalty = const,
-                    smoothConst = smoothConst,
-                    nChains = nChains, sdVar = sdVar,
-                    progressMessage = progressMessage,
-                    isCheck = isCheck),
-    error = function(e){
-      logError(e)
-      #values$fileImportWarning <- "Could not run model."
-      NULL
-    },
-    warning = function(w){
-      logWarning(w)
-      #values$fileImportWarning <- "Could not run model."
-      NULL
-    }
+  tryCatchWithMessage(
+    fitPlotRModelMC(
+      prepData,
+      K = K,
+      burnin = burnin,
+      iter = iter,
+      penalty = const,
+      smoothConst = smoothConst,
+      nChains = nChains,
+      sdVar = sdVar,
+      progressMessage = progressMessage,
+      isCheck = isCheck
+    )
   )
 }
 

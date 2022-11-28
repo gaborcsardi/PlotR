@@ -7,10 +7,8 @@ postProcessingUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    #useShinyjs(),
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    selectInput(ns("activePlot"),
                                label = "Select a saved plot",
                                choices = NULL,
@@ -104,7 +102,11 @@ postProcessingUI <- function(id, title) {
                 h4("View the Selected Plot"),
                 plotOutput(ns("viewSelectedPlot")),
                 tags$hr(),
-                h4("View the Post Processing"),
+                fluidRow(column(9, h4("View the Post Processing")),
+                         column(3,
+                                align = "right",
+                                plotExportButton(ns("export"))
+                         )),
                 plotOutput(ns("viewPostPlot"))
       )
     )
@@ -117,6 +119,7 @@ postProcessingUI <- function(id, title) {
 postProcessing <- function(input, output, session, savedData) {
 
   activePostPlot <- reactiveVal(NULL)
+  values <- reactiveValues(plot = NULL)
 
   observe({
     req(names(savedData()))
@@ -239,5 +242,8 @@ postProcessing <- function(input, output, session, savedData) {
   output$viewPostPlot <- renderPlot({
     req(activePostPlot())
     makeSinglePlot(activePostPlot()$plotValues, activePostPlot()$plotStyle)
+    values$plot <- recordPlot()
   })
+
+  callModule(plotExport, "export", reactive(values$plot))
 }

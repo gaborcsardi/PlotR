@@ -1,8 +1,8 @@
 getPrepData <- function(data, xSelection, ySelection){
   data <- removeDataOutliers(data)
 
-  x <- getPrepDataPart(data, xSelection, part = "X")
-  y <- getPrepDataPart(data, ySelection, part = "Y")
+  x <- tryCatchWithMessage(getPrepDataPart(data, xSelection, part = "X"))
+  y <- tryCatchWithMessage(getPrepDataPart(data, ySelection, part = "Y"))
 
   bind_cols(x, y)
 }

@@ -16,16 +16,15 @@ dataSettingsUI <- function(id, label = "Data Settings") {
     selectColumnsUI(id = ns("y"), label = "y"),
     checkboxInput(inputId = ns("outlierD"),
                   label = "Remove data outliers in y",
-                  value = FALSE, width = "100%"),
+                  value = defaultDataOutlier()$outlierD, width = "100%"),
     conditionalPanel(
       condition = "input.outlierD == true",
       ns = ns,
       sliderInput(inputId = ns("outlierValueD"),
                   label = "Data outlier threshold in standard deviations",
-                  min = 2, max = 8, value = 4, step = 0.1))
+                  min = 2, max = 8, value = defaultDataOutlier()$outlierValueD, step = 0.1))
   )
 }
-
 
 #' Server function for data settings
 #'
@@ -34,35 +33,31 @@ dataSettingsUI <- function(id, label = "Data Settings") {
 #' @param input shiny input object
 #' @param output shiny output object
 #' @param session shiny session
-#' @param data (reactive) dataframe of the selected loaded file
-#' @param plotData (reactive) list of selected saved data
-dataSettings <- function(input, output, session, data, plotData) {
-
-  dataSettingsX <- reactiveVal(NULL)
-  dataSettingsY <- reactiveVal(NULL)
-
-  observe({
-    req(plotData())
-    dataSettingsX(plotData()$plotValues$dataSettings$xColumns)
-    dataSettingsY(plotData()$plotValues$dataSettings$yColumns)
-  })
+#' @param colNames (reactive) colnames of dataframe of the selected loaded file
+#' @param inputSettings (list) list of reactive settings for input fields
+dataSettings <- function(input, output, session, colNames, inputSettings) {
 
   xColumns <- callModule(
-    selectColumns, id = "x", data = data, datSettings = dataSettingsX
+    selectColumns,
+    id = "x",
+    colNames = colNames,
+    datSettings = inputSettings$xColumns
     )
   yColumns <- callModule(
-    selectColumns, id = "y", data = data, datSettings = dataSettingsY
+    selectColumns,
+    id = "y",
+    colNames = colNames,
+    datSettings = inputSettings$yColumns
     )
 
   observe({
-    req(plotData())
     updateCheckboxInput(
       session, "outlierD",
-      value = plotData()$plotValues$dataSettings$dataOutlier$outlierD
+      value = inputSettings$dataOutlier()$outlierD
       )
     updateSliderInput(
       session, "outlierValueD",
-      value = plotData()$plotValues$dataSettings$dataOutlier$outlierValueD
+      value = inputSettings$dataOutlier()$outlierValueD
       )
   })
 
@@ -72,6 +67,14 @@ dataSettings <- function(input, output, session, data, plotData) {
     dataOutlier = reactive(list(outlierD = input$outlierD,
                                 outlierValueD = input$outlierValueD
     ))
+  )
+}
+
+
+defaultDataOutlier <- function() {
+  list(
+    outlierD = FALSE,
+    outlierValueD = 4
   )
 }
 
@@ -142,51 +145,26 @@ selectColumnsUI <- function(id, label) {
 }
 
 
-
-selectColumns <- function(input, output, session, data, datSettings) {
-
-  observe({
-    req(data())
-    updateSelectInput(session, "Point", choices = colnames(data()),
-                      selected = colnames(data())[1])
-    updateSelectInput(session, "Min", choices = colnames(data()),
-                      selected = colnames(data())[1])
-    updateSelectInput(session, "Max", choices = colnames(data()),
-                      selected = colnames(data())[2])
-    updateSelectInput(session, "CredMin", choices = colnames(data()),
-                      selected = colnames(data())[1])
-    updateSelectInput(session, "CredMax", choices = colnames(data()),
-                      selected = colnames(data())[2])
-    updateSelectInput(session, "Mean", choices = colnames(data()),
-                      selected = colnames(data())[1])
-    updateSelectInput(session, "SD", choices = colnames(data()),
-                      selected = colnames(data())[2])
-    updateSelectInput(session, "Mean2", choices = colnames(data()),
-                      selected = colnames(data())[1])
-    updateSelectInput(session, "SEMSD", choices = colnames(data()),
-                      selected = colnames(data())[2])
-  })
-
+selectColumns <- function(input, output, session, colNames, datSettings) {
   observeEvent(datSettings(), {
-    req(data(), datSettings())
     updateSelectInput(session, "type", selected = datSettings()$type)
-    updateSelectInput(session, "Point", choices = colnames(data()),
+    updateSelectInput(session, "Point", choices = colNames(),
                       selected = datSettings()$Point)
-    updateSelectInput(session, "Min", choices = colnames(data()),
+    updateSelectInput(session, "Min", choices = colNames(),
                       selected = datSettings()$Min)
-    updateSelectInput(session, "Max", choices = colnames(data()),
+    updateSelectInput(session, "Max", choices = colNames(),
                       selected = datSettings()$Max)
-    updateSelectInput(session, "CredMin", choices = colnames(data()),
+    updateSelectInput(session, "CredMin", choices = colNames(),
                       selected = datSettings()$CredMin)
-    updateSelectInput(session, "CredMax", choices = colnames(data()),
+    updateSelectInput(session, "CredMax", choices = colNames(),
                       selected = datSettings()$CredMax)
-    updateSelectInput(session, "Mean", choices = colnames(data()),
+    updateSelectInput(session, "Mean", choices = colNames(),
                       selected = datSettings()$Mean)
-    updateSelectInput(session, "SD", choices = colnames(data()),
+    updateSelectInput(session, "SD", choices = colNames(),
                       selected = datSettings()$SD)
-    updateSelectInput(session, "Mean2", choices = colnames(data()),
+    updateSelectInput(session, "Mean2", choices = colNames(),
                       selected = datSettings()$Mean2)
-    updateSelectInput(session, "SEMSD", choices = colnames(data()),
+    updateSelectInput(session, "SEMSD", choices = colNames(),
                       selected = datSettings()$SEMSD)
   })
 
@@ -204,9 +182,28 @@ selectColumns <- function(input, output, session, data, datSettings) {
   ))
 }
 
-getDefault <- function(xType, n) {
-  ifelse(xType == "point", n + 1, n + 2)
+
+defaultColSelection <- function(columnNames = NULL) {
+  if (is.null(columnNames)) {
+    colChoices <- character(0)
+  } else {
+    colChoices <- columnNames
+  }
+
+  list(type = "point",
+       Point = colChoices[1],
+       Min = colChoices[1],
+       Max = colChoices[2],
+       CredMin = colChoices[1],
+       CredMax = colChoices[2],
+       CredPercent = 95,
+       Mean = colChoices[1],
+       SD = colChoices[2],
+       Mean2 = colChoices[1],
+       SEMSD = colChoices[2]
+  )
 }
+
 
 #' Model settings module
 #'
@@ -217,41 +214,86 @@ getDefault <- function(xType, n) {
 #'
 #' @rdname dataSettings
 modelSettingsUI <- function(id, label = "Model Settings") {
-
   ns <- NS(id)
 
   list(
     tags$h4(label),
-    checkboxInput(inputId = ns("outlier"),
-                  label = "Remove model outliers",
-                  value = FALSE, width = "100%"),
+    checkboxInput(
+      inputId = ns("outlier"),
+      label = "Remove model outliers",
+      value = defaultModelSettings()$outlier,
+      width = "100%"
+    ),
     conditionalPanel(
       condition = "input.outlier == true",
-      sliderInput(inputId = ns("outlierValue"),
-                  label = "Model outlier threshold in standard deviations",
-                  min = 2, max = 8, value = 4, step = 0.1),
+      sliderInput(
+        inputId = ns("outlierValue"),
+        label = "Model outlier threshold in standard deviations",
+        min = 2,
+        max = 8,
+        value = defaultModelSettings()$outlierValue,
+        step = 0.1
+      ),
       ns = ns
     ),
-    radioButtons(inputId = ns("const"), label = "Extrapolation",
-                 choices = c("linear" = 2, "constant" = 1)),
-    checkboxInput(inputId = ns("sdVar"), label = "Variable standard deviation",
-                  value = FALSE),
-    sliderInput(inputId = ns("smoothConst"), label = "Amount of smoothing",
-                value = 1, min = 0.2, max = 5),
-    checkboxInput(inputId = ns("advancedSettings"),
-                  label = "Use advanced settings",
-                  value = FALSE, width = "100%"),
+    radioButtons(
+      inputId = ns("const"),
+      label = "Extrapolation",
+      selected = defaultModelSettings()$const,
+      choices = c("linear" = 2, "constant" = 1)
+    ),
+    checkboxInput(
+      inputId = ns("sdVar"),
+      label = "Variable standard deviation",
+      value = defaultModelSettings()$sdVar
+    ),
+    sliderInput(
+      inputId = ns("smoothConst"),
+      label = "Amount of smoothing",
+      value = defaultModelSettings()$smoothConst,
+      min = 0.2,
+      max = 5
+    ),
+    checkboxInput(
+      inputId = ns("advancedSettings"),
+      label = "Use advanced settings",
+      value = defaultModelSettings()$advancedSettings,
+      width = "100%"
+    ),
     conditionalPanel(
       condition = "input.advancedSettings == true",
       ns = ns,
-      sliderInput(inputId = ns("K"), label = "Number of basis functions",
-                  value = 25, min = 4, max = 150),
-      sliderInput(inputId = ns("burnin"), label = "Number of burnin iterations",
-                  value = 1000, min = 100, max = 10000, step = 100),
-      sliderInput(inputId = ns("iter"), label = "Number of total iterations",
-                  value = 5000, min = 1000, max = 250000, step = 1000),
-      sliderInput(inputId = ns("nChains"), label = "Number of MCMC chains",
-                  value = 4, min = 1, max = 16, step = 1)
+      sliderInput(
+        inputId = ns("K"),
+        label = "Number of basis functions",
+        value = defaultModelSettings()$K,
+        min = 4,
+        max = 150
+      ),
+      sliderInput(
+        inputId = ns("burnin"),
+        label = "Number of burnin iterations",
+        value = defaultModelSettings()$burnin,
+        min = 100,
+        max = 10000,
+        step = 100
+      ),
+      sliderInput(
+        inputId = ns("iter"),
+        label = "Number of total iterations",
+        value = defaultModelSettings()$iter,
+        min = 1000,
+        max = 250000,
+        step = 1000
+      ),
+      sliderInput(
+        inputId = ns("nChains"),
+        label = "Number of MCMC chains",
+        value = defaultModelSettings()$nChains,
+        min = 1,
+        max = 16,
+        step = 1
+      )
     )
   )
 }
@@ -263,38 +305,53 @@ modelSettingsUI <- function(id, label = "Model Settings") {
 #' @param input shiny input object
 #' @param output shiny output object
 #' @param session shiny session
-#' @param data (reactive) dataframe of the selected loaded file
-#' @param plotData (reactive) list of selected saved data
-modelSettings <- function(input, output, session, data, plotData) {
+#' @param modelParameters (reactive) list of settings for input fields
+modelSettings <-
+  function(input,
+           output,
+           session,
+           modelParameters) {
+    observe({
+      req(modelParameters())
+      updateCheckboxInput(session, "outlier", value = modelParameters()$outlier)
+      updateSliderInput(session, "outlierValue", value = modelParameters()$outlierValue)
+      updateRadioButtons(session, "const", selected = modelParameters()$const)
+      updateCheckboxInput(session, "sdVar", value = modelParameters()$sdVar)
+      updateSliderInput(session, "smoothConst", value = modelParameters()$smoothConst)
+      updateCheckboxInput(session, "advancedSettings", value = modelParameters()$advancedSettings)
+      updateSliderInput(session, "K", value = modelParameters()$K)
+      updateSliderInput(session, "burnin", value = modelParameters()$burnin)
+      updateSliderInput(session, "iter", value = modelParameters()$iter)
+      updateSliderInput(session, "nChains", value = modelParameters()$nChains)
+    })
 
-  modelParameters <- reactiveVal(NULL)
+    reactive(
+      list(
+        outlier = input$outlier,
+        outlierValue = input$outlierValue,
+        smoothConst = input$smoothConst,
+        sdVar = input$sdVar,
+        const = as.numeric(input$const),
+        advancedSettings = input$advancedSettings,
+        K = input$K,
+        burnin = input$burnin,
+        iter = input$iter,
+        nChains = input$nChains
+      )
+    )
+  }
 
-  observe({
-    req(plotData())
-    modelParameters(plotData()$plotValues$modelParameters)
-  })
-
-  observe({
-    req(modelParameters())
-    updateCheckboxInput(session, "outlier", value = modelParameters()$outlier)
-    updateSliderInput(session, "outlierValue", value = modelParameters()$outlierValue)
-    updateRadioButtons(session, "const", selected = modelParameters()$const)
-    updateCheckboxInput(session, "sdVar", value = modelParameters()$sdVar)
-    updateSliderInput(session, "smoothConst", value = modelParameters()$smoothConst)
-    updateSliderInput(session, "K", value = modelParameters()$K)
-    updateSliderInput(session, "burnin", value = modelParameters()$burnin)
-    updateSliderInput(session, "iter", value = modelParameters()$iter)
-    updateSliderInput(session, "nChains", value = modelParameters()$nChains)
-  })
-
-  reactive(list(outlier = input$outlier,
-                outlierValue = input$outlierValue,
-                burnin = input$burnin,
-                iter = input$iter,
-                nChains = input$nChains,
-                smoothConst = input$smoothConst,
-                K = input$K,
-                sdVar = input$sdVar,
-                const = as.numeric(input$const)
-  ))
+defaultModelSettings <- function() {
+  list(
+    outlier = FALSE,
+    outlierValue = 4,
+    smoothConst = 1,
+    sdVar = FALSE,
+    const = 2,
+    advancedSettings = FALSE,
+    K = 25,
+    burnin = 1000,
+    iter = 5000,
+    nChains = 4
+  )
 }

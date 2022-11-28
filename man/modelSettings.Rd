@@ -4,7 +4,7 @@
 \alias{modelSettings}
 \title{Server function for model settings}
 \usage{
-modelSettings(input, output, session, data, plotData)
+modelSettings(input, output, session, modelParameters)
 }
 \arguments{
 \item{input}{shiny input object}
@@ -13,9 +13,7 @@ modelSettings(input, output, session, data, plotData)
 
 \item{session}{shiny session}
 
-\item{data}{(reactive) dataframe of the selected loaded file}
-
-\item{plotData}{(reactive) list of selected saved data}
+\item{modelParameters}{(reactive) list of settings for input fields}
 }
 \description{
 Backend for model settings module

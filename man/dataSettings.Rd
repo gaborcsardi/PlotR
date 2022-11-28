@@ -8,7 +8,7 @@
 \usage{
 dataSettingsUI(id, label = "Data Settings")
 
-dataSettings(input, output, session, data, plotData)
+dataSettings(input, output, session, colNames, inputSettings)
 
 modelSettingsUI(id, label = "Model Settings")
 }
@@ -23,9 +23,9 @@ modelSettingsUI(id, label = "Model Settings")
 
 \item{session}{shiny session}
 
-\item{data}{(reactive) dataframe of the selected loaded file}
+\item{colNames}{(reactive) colnames of dataframe of the selected loaded file}
 
-\item{plotData}{(reactive) list of selected saved data}
+\item{inputSettings}{(list) list of reactive settings for input fields}
 }
 \description{
 UI function to define settings for imported data
