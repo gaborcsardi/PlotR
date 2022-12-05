@@ -1,6 +1,6 @@
 testthat::test_that("addPackageVersionNo", {
   testthat::expect_equal(
-    addPackageVersionNo("abc"),
-    "abc\n\nPlotR version 22.2.1 ."
+    substr(addPackageVersionNo("abc"), 1, 22),
+    "abc\n\nPlotR version 22."
   )
 })

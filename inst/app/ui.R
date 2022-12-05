@@ -8,7 +8,7 @@ tagList(
         position = "fixed-top",
         collapsible = TRUE,
         id = "tab",
-        uploadFilesUI("files", "File Upload(s)"),
+        uploadFilesUI("files", "File Import(s)"),
         runModelUI("model", "Run Model"),
         postProcessingUI("post", "Post Processing"),
         stylePlotUI("style", "Style Plot"),

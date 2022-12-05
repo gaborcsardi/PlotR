@@ -13,7 +13,7 @@ downloadModelUI <- function(id, label) {
     #             options = list(`actions-box` = TRUE),
     #             multiple = T),
     selectInput(ns("selectedModels"), label = NULL,
-                choices = NULL,
+                choices = c("Save or upload plots ..." = ""),
                 multiple = T),
     textAreaInput(ns("notes"), "Add notes"),
     downloadButton(ns("downloadModelButton"), "Download")
@@ -89,23 +89,37 @@ uploadModel <- function(input, output, session, loadedFiles, savedData,
 
     if (inherits(res, "try-error") || !exists("model")) {
       shinyalert("Could not read model from file", type = "error")
-      return()
-    }
-
-    if (!is.null(model)) {
+    } else if (is.null(model)) {
+      shinyalert("Model object is empty.", type = "error")
+    } else if (all(names(model) %in% c("loadedFiles", "savedData"))) {
+      shinyalert(
+        title = "Depricated format",
+        text = "Could not read file. Please use downloaded files from PlotR version larger or equal 22.02.1",
+        type = "error"
+      )
+    } else {
       savedData(c(savedData(), model))
       updateSelectInput(session, "activePlot", choices = names(savedData()),
                         selected = names(savedData())[length(savedData())])
 
       uploadedFileNames <- lapply(names(savedData()), function(plot){
-        savedData()[[plot]]$plotValues$activeFile
+        newFileName <- savedData()[[plot]]$plotValues$activeFile
+
+        # rename duplicated files
+        while (any(newFileName == names(loadedFiles()))) {
+          newFileName <- incIndexOfFile(newFileName)
+          tmpSavedData <- savedData()
+          tmpSavedData[[plot]]$plotValues$activeFile <- newFileName
+          savedData(tmpSavedData)
+        }
+
+        newFileName
       })
+
       uploadedFiles <- lapply(names(savedData()), function(plot){
         savedData()[[plot]]$plotValues$activeFileData
       })
-
       uploadedFiles <- setNames(uploadedFiles, uploadedFileNames)
-      uploadedFiles <- uploadedFiles[unique(unlist(uploadedFileNames))]
 
       loadedFiles(c(loadedFiles(), uploadedFiles[unique(unlist(uploadedFileNames))]))
       updateSelectInput(session, "activeFile", choices = names(loadedFiles()),
@@ -114,10 +128,12 @@ uploadModel <- function(input, output, session, loadedFiles, savedData,
       uploadedNotes(readLines("README.txt")[[1]])
 
       shinyalert("Model loaded", type = "success")
-    } else {
-      shinyalert("Empty model loaded", type = "warning")
     }
 
+    # clean up
+    if (file.exists("model.Rdata")) file.remove("model.Rdata")
+    if (file.exists("README.txt")) file.remove("README.txt")
+    if (file.exists("help.html")) file.remove("help.html")
   })
 }
 

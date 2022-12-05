@@ -11,7 +11,7 @@
 #' @importFrom readxl read_excel
 #' @importFrom Rfast rmvnorm spdinv
 #' @importFrom rlang .data
-#' @importFrom shinyalert shinyalert useShinyalert
+#' @importFrom shinyalert shinyalert
 #' @importFrom shinyjs reset useShinyjs
 #' @importFrom stats cor density dunif na.omit rnorm rgamma runif sd setNames var median qnorm
 #' @importFrom tibble tribble

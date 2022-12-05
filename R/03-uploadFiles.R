@@ -7,14 +7,13 @@ uploadFilesUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    importDataUI(ns("data"), "Import Data"),
                    tags$hr(),
                    selectInput(ns("activeFile"),
-                               label = "View the uploaded file",
-                               choices = NULL),
+                               label = "View the imported file",
+                               choices = c("Import a file ..." = "")),
                    tags$hr()
       ),
       mainPanel(width = 8,
@@ -54,12 +53,16 @@ uploadFiles <- function(input, output, session) {
   observeEvent(importedData(), {
     req(names(importedData()))
 
-    if (names(importedData()) %in% names(loadedFiles())) {
-      loadedFiles(loadedFiles()[names(loadedFiles()) != names(importedData())])
+    tmpImport <- importedData()
+    newFileName <- names(tmpImport)
+
+    # rename duplicated files
+    while (any(newFileName == names(loadedFiles()))) {
+      newFileName <- incIndexOfFile(newFileName)
+      names(tmpImport) <- newFileName
     }
 
-    loadedFiles(c(loadedFiles(), importedData()))
-
+    loadedFiles(c(loadedFiles(), tmpImport))
   })
 
   output$preview <- renderDT({
@@ -68,4 +71,35 @@ uploadFiles <- function(input, output, session) {
   })
 
   return(loadedFiles)
+}
+
+
+#' Inc Index Of File
+#'
+#' If the file has no index, add a new index: "(1)". If an index already exists, increase it by one.
+#'
+#' @param fileName (character) filename
+incIndexOfFile <- function(fileName) {
+  # extract type
+  fileType <- regmatches(fileName, regexpr(".[[:alnum:]]*$", fileName))
+
+  # remove type
+  fileName <- gsub(".[[:alnum:]]*$", "", fileName)
+
+  # extract index
+  currentIndex <- regmatches(fileName, regexpr("\\([[:digit:]]+\\)$", fileName))
+
+  # inc index
+  if (length(currentIndex) == 0) {
+    paste0(fileName, "(1)", fileType)
+  } else {
+    # get new index
+    newIndex <- currentIndex %>%
+      gsub(pattern = "\\(|\\)",
+           replacement = "") %>%
+      as.numeric() + 1
+
+    # replace with new index
+    gsub("\\([[:digit:]]+\\)$" , paste0("(", newIndex, ")", fileType) , fileName)
+  }
 }

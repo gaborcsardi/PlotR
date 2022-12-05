@@ -7,24 +7,26 @@ addMorePointsUI <- function(id, title) {
     title,
     id = id,
     value = id,
-    useShinyalert(),
     fluidRow(
-      sidebarPanel(width = 2,
+      sidebarPanel(width = 3,
                    selectInput(ns("activePlot"), label = "Select a saved plot",
-                               choices = NULL, selected = NULL),
+                               choices = c("Save or upload a plot ..." = "")),
                    tags$hr(),
                    # Save plot ####
                    savePlotUI(ns("savingPlot"), label = "Save plot"),
                    deletePlotUI(ns("deletingPlot"), "Delete plot(s)")
       ),
       mainPanel(width = 8,
-                h4("View the Plot"),
+                fluidRow(column(9, h4("View the Plot")),
+                         column(3,
+                                align = "right",
+                                plotExportButton(ns("export"))
+                                )),
                 plotOutput(ns("styledPlot")),
                 tags$hr(),
                 fluidRow(
                   column(3,
                          h4("Add points"),
-
                          textInput(ns("pointName"), label = "Name the point", value = NULL),
                          addPointsUI(ns("morePoints")),
                          actionButton(ns("addPointsButton"), "Add data point")
@@ -33,13 +35,13 @@ addMorePointsUI <- function(id, title) {
                          h4("Remove points"),
                          selectInput(ns("pointsToRemove"),
                                      label = "Select points to remove",
-                                     choices = NULL, multiple = TRUE),
+                                     choices = c("Add a point ..." = ""), multiple = TRUE),
                          actionButton(ns("removePointsButton"), "Remove data point")
                   ),
                   column(3,
                          h4("Style points"),
                          selectInput(ns("activePoint"), label = "Style the point",
-                                     choices = NULL, selected = NA),
+                                     choices = c("Add a point ..." = ""), selected = NA),
                          checkboxInput(ns("hidePointLabel"), label = "Hide point label",
                                        value = FALSE),
                          colourInput(ns("pointColor"), label = "Point color",
@@ -56,12 +58,6 @@ addMorePointsUI <- function(id, title) {
                                      choices = fontChoices(), selected = 1)
                   )
                 )
-      ),
-      sidebarPanel(width = 2,
-                   # dataExportButton(ns("exportData")),
-                   # tags$hr(),
-                   div(plotExportButton(ns("export"))),
-                   tags$hr()
       )
     )
   )
