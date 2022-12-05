@@ -12,8 +12,8 @@ uploadFilesUI <- function(id, title) {
                    importDataUI(ns("data"), "Import Data"),
                    tags$hr(),
                    selectInput(ns("activeFile"),
-                               label = "View the uploaded file",
-                               choices = NULL),
+                               label = "View the imported file",
+                               choices = c("Import a file ..." = "")),
                    tags$hr()
       ),
       mainPanel(width = 8,

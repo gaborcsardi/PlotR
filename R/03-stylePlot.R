@@ -10,7 +10,7 @@ stylePlotUI <- function(id, title) {
     fluidRow(
       sidebarPanel(width = 3,
                    selectInput(ns("activePlot"), label = "Select a saved plot",
-                               choices = NULL, selected = NULL),
+                               choices = c("Save or upload a plot ..." = "")),
                    tags$hr(),
                    # Save plot ####
                    savePlotUI(ns("savingPlot"), label = "Save plot"),
@@ -30,10 +30,12 @@ stylePlotUI <- function(id, title) {
                          colourInput(inputId = ns("colorBg"),
                                      label = "Background color",
                                      value = '#FFFFFF'),
-                         sliderInput(ns("xRange"), label = "x axis range",
-                                     min = 0, max = 1, value = c(0, 1), dragRange = FALSE),
-                         sliderInput(ns("yRange"), label = "y axis range",
-                                     min = 0, max = 1, value = c(0, 1), dragRange = FALSE),
+                        sliderAndNumericRangeUI(ns("xRange"), label = "x axis range",
+                                                 min = 0, max = 1, value = c(0, 1),
+                                                 dragRange = FALSE),
+                         sliderAndNumericRangeUI(ns("yRange"), label = "y axis range",
+                                                 min = 0, max = 1, value = c(0, 1),
+                                                 dragRange = FALSE),
                          selectInput(inputId = ns("sideXAxis"),
                                      label = "Side of x axis",
                                      choices = c("bottom" = "1", "top" = "3"),
@@ -139,6 +141,20 @@ stylePlot <- function(input, output, session, savedData) {
     line = NULL
   )
 
+  # basic plot - range
+  userInputXRange <- sliderAndNumericRangeServer(
+    "xRange",
+    value = reactive(activePlotStyle$xRange),
+    min = reactive(minRange(activePlotStyle$xRange)),
+    max = reactive(maxRange(activePlotStyle$xRange))
+  )
+  userInputYRange <- sliderAndNumericRangeServer(
+    "yRange",
+    value = reactive(activePlotStyle$yRange),
+    min = reactive(minRange(activePlotStyle$yRange)),
+    max = reactive(maxRange(activePlotStyle$yRange))
+  )
+
   observe({
     req(names(savedData()))
     updateSelectInput(session, "activePlot", choices = names(savedData()),
@@ -148,6 +164,7 @@ stylePlot <- function(input, output, session, savedData) {
   # load saved plot ####
   observeEvent(input$activePlot, {
     req(input$activePlot)
+    ## selected plot >> activePlotValues, activePlotStyle ----
 
     for (i in names(activePlotValues)) {
       activePlotValues[[i]] <- savedData()[[input$activePlot]]$plotValues[[i]]
@@ -157,12 +174,9 @@ stylePlot <- function(input, output, session, savedData) {
       activePlotStyle[[i]] <- savedData()[[input$activePlot]]$plotStyle[[i]]
     }
 
+    ## activePlotValues >> inputs ----
     # plot style
     # basic plot
-    updateSliderInput(session, "xRange", min = minRange(activePlotStyle$xRange),
-                      max = maxRange(activePlotStyle$xRange), value = activePlotStyle$xRange)
-    updateSliderInput(session, "yRange", min = minRange(activePlotStyle$yRange),
-                      max = maxRange(activePlotStyle$yRange), value = activePlotStyle$yRange)
     updateColourInput(session, "colorBg", value = activePlotStyle$colorBg)
     updateSelectInput(session, "sideXAxis", selected = activePlotStyle$sideXAxis)
     updateSelectInput(session, "sideYAxis", selected = activePlotStyle$sideYAxis)
@@ -191,6 +205,7 @@ stylePlot <- function(input, output, session, savedData) {
     updateCheckboxInput(session, "hideHide", value = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$hideHide)
   })
 
+  # activePlotStyle(changed label, point, line) >> inputs ####
   observeEvent(input$labelName, {
     req(input$activePlot, input$labelName)
     updateTextInput(session, "text", value = activePlotStyle[[input$labelName]]$text)
@@ -217,18 +232,18 @@ stylePlot <- function(input, output, session, savedData) {
     updateCheckboxInput(session, "hideHide", value = activePlotStyle[[input$lineName]]$hideHide)
   })
 
+  # inputs >> activePlotStyle ####
   observe({
-    req(input$activePlot)
     # basic plot
-    activePlotStyle$xRange <- input$xRange
-    activePlotStyle$yRange <- input$yRange
+    activePlotStyle$xRange <- userInputXRange()
+    activePlotStyle$yRange <- userInputYRange()
     activePlotStyle$colorBg <- input$colorBg
     activePlotStyle$sideXAxis <- input$sideXAxis
     activePlotStyle$sideYAxis <- input$sideYAxis
   })
 
   observe({
-    req(input$activePlot, input$labelName)
+    req(input$labelName)
     # titles
     activePlotStyle[[input$labelName]] <- list(text = input$text,
                                                textColor = input$textColor,
@@ -237,7 +252,7 @@ stylePlot <- function(input, output, session, savedData) {
   })
 
   observe({
-    req(input$activePlot, input$pointName)
+    req(input$pointName)
     # points
     activePlotStyle[[input$pointName]] <- list(color = input$pointColor,
                                                symbol = as.numeric(input$pointSymbol),
@@ -248,7 +263,7 @@ stylePlot <- function(input, output, session, savedData) {
   })
 
   observe({
-    req(input$activePlot, input$lineName)
+    req(input$lineName)
     # lines
     activePlotStyle[[input$lineName]] <- list(color = input$lineColor,
                                               lineType = as.numeric(input$lineType),

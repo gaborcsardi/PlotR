@@ -43,6 +43,8 @@ savePlot <- function(input, output, session, savedData, currentPlot){
                                      plotValues = reactiveValuesToList(currentPlot$plotValues),
                                      plotStyle = reactiveValuesToList(currentPlot$plotStyle))),
                            input$plotName)))
+
+      updateTextInput(session, "plotName", value = "")
     }
   })
 }
@@ -65,7 +67,7 @@ deletePlotUI <- function(id, label) {
                     style = "margin-top: 10px;",
                     selectInput(ns("deletePlotSelection"),
                                 label = label,
-                                choices = NULL,
+                                choices = c("Save or upload a plot ..." = ""),
                                 multiple = T)
                     ),
              column(4,

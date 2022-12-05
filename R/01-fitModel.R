@@ -60,19 +60,9 @@ getPlotValues <- function(plotValues, activeFile, activeFileData, dataSelection,
 
   if (is.null(plotValues$modelData$modelOutput)) return(plotValues)
 
-  plotValues$predictedData <- list(
-    evenlyOnX = predictSample(
-      plotRModel = plotValues$modelData$modelOutput,
-      xCol = prepData$X,
-      xVar = getXVarEvenly(m = prepData$X,
-                           si = prepData$XUncertainty)) %>%
-      getEstimations(smoothConst = plotValues$modelParameters$smoothConst),
-    observations = predictSample(
-      plotRModel = plotValues$modelData$modelOutput,
-      xCol = prepData$X,
-      xVar = prepData$X) %>%
-      getEstimations(smoothConst = plotValues$modelParameters$smoothConst)
-  )
+  plotValues$predictedData <- predictData(modelData = plotValues$modelData$modelOutput,
+                               prepData = prepData,
+                               smoothConst = plotValues$modelParameters$smoothConst)
 
   plotValues$defaultXRange <- getRange(
     data = plotValues$selectedData[, unlist(xSelection$colNames),

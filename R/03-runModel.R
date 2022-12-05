@@ -14,7 +14,7 @@ runModelUI <- function(id, title) {
           column(8,
                  selectInput(ns("activeFile"),
                              label = "Select a file",
-                             choices = NULL)
+                             choices = c("Import a file ..." = ""))
           ),
           column(4,
                  align = "left",
@@ -42,7 +42,7 @@ runModelUI <- function(id, title) {
                                  style = "margin-top: 10px;",
                                  selectInput(ns("activePlot"),
                                              label = "Load plot",
-                                             choices = NULL)
+                                             choices = c("Save or upload a plot ..." = ""))
                           ),
                           column(4,
                                  align = "left",
@@ -102,7 +102,7 @@ runModel <- function(input, output, session, loadedFiles) {
 
   savedData <- reactiveVal(list())
   activeFileData <- reactiveVal(NULL)
-  currentNamesOfNumCols <- reactiveVal(character(0))
+  currentNamesOfNumCols <- reactiveVal(emptyColumnChoices())
   currentDataSelection <- list(xColumns = reactiveVal(defaultColSelection()),
                                yColumns = reactiveVal(defaultColSelection()),
                                dataOutlier = reactiveVal(defaultDataOutlier()))
@@ -189,6 +189,8 @@ runModel <- function(input, output, session, loadedFiles) {
       )
 
     plotStyle$xRange <- plotValues$defaultXRange
+    plotStyle$xAxisLabel$text <- cleanLabel(plotValues$dataSettings$xColumns)
+    plotStyle$yAxisLabel$text <- cleanLabel(plotValues$dataSettings$yColumns)
   })
 
   # add quantile ####
@@ -199,6 +201,14 @@ runModel <- function(input, output, session, loadedFiles) {
                                                errorType = input$errorType,
                                                SEQuantile = input$SEQuantile,
                                                SDFactor = input$SDFactor)
+
+    plotValues$predictedData$evenlyOnX <-
+      plotValues$predictedData$evenlyOnX %>%
+      addQuantiles(quantile = input$SEQuantile)
+
+    plotValues$predictedData$observations <-
+      plotValues$predictedData$observations %>%
+      addQuantiles(quantile = input$SEQuantile)
 
     plotStyle$yRange <- getRange(
       data = plotValues$selectedData[, unlist(getSelection(
@@ -212,18 +222,6 @@ runModel <- function(input, output, session, loadedFiles) {
         factor = input$SDFactor
         ))
       )
-
-    plotValues$predictedData$evenlyOnX <-
-      plotValues$predictedData$evenlyOnX %>%
-      addQuantiles(quantile = input$SEQuantile)
-
-    plotValues$predictedData$observations <-
-      plotValues$predictedData$observations %>%
-      addQuantiles(quantile = input$SEQuantile)
-
-    plotStyle$xAxisLabel$text <- cleanLabel(plotValues$dataSettings$xColumns)
-    plotStyle$yAxisLabel$text <- cleanLabel(plotValues$dataSettings$yColumns)
-
   })
 
   # render plot ####

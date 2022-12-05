@@ -11,7 +11,7 @@ multiplePredictionsUI <- function(id, title) {
       sidebarPanel(width = 3,
                    selectInput(ns("activePlots"),
                                label = "Select saved plots",
-                               choices = NULL,
+                               choices = c("Save or upload plots ..." = ""),
                                multiple = TRUE#,
                                #selectize = TRUE
                    )
@@ -76,12 +76,14 @@ multiplePredictionsUI <- function(id, title) {
                       ns = ns,
                       selectInput(ns("activeFile"),
                                   label = "Select a file",
-                                  choices = NULL),
+                                  choices = c("Import a file ..." = "")),
                       tags$br(),
                       fluidRow(
                         column(3,
                                h4("Predict Response"),
-                               selectColumnsUI(id = ns("moreXUploaded"), label = "x"),
+                               selectColumnsUI(id = ns("moreXUploaded"),
+                                               label = "x",
+                                               emptyChoices = c("Select a file ..." = "")),
                                # no sampling here, we have a list of values
                         ),
                         column(2,
@@ -90,7 +92,9 @@ multiplePredictionsUI <- function(id, title) {
                         column(3,
                                offset = 1,
                                h4("Derive Explanatory"),
-                               selectColumnsUI(id = ns("moreYUploaded"), label = "y"),
+                               selectColumnsUI(id = ns("moreYUploaded"),
+                                               label = "y",
+                                               emptyChoices = c("Select a file ..." = "")),
                                # no sampling here, we have a list of values
                         ),
                         column(2,

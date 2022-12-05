@@ -11,7 +11,7 @@ postProcessingUI <- function(id, title) {
       sidebarPanel(width = 3,
                    selectInput(ns("activePlot"),
                                label = "Select a saved plot",
-                               choices = NULL,
+                               choices = c("Save or upload a plot ..." = ""),
                                multiple = F),
                    tags$hr(),
                    selectInput(ns("operation"),

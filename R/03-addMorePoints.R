@@ -10,7 +10,7 @@ addMorePointsUI <- function(id, title) {
     fluidRow(
       sidebarPanel(width = 3,
                    selectInput(ns("activePlot"), label = "Select a saved plot",
-                               choices = NULL, selected = NULL),
+                               choices = c("Save or upload a plot ..." = "")),
                    tags$hr(),
                    # Save plot ####
                    savePlotUI(ns("savingPlot"), label = "Save plot"),
@@ -35,13 +35,13 @@ addMorePointsUI <- function(id, title) {
                          h4("Remove points"),
                          selectInput(ns("pointsToRemove"),
                                      label = "Select points to remove",
-                                     choices = NULL, multiple = TRUE),
+                                     choices = c("Add a point ..." = ""), multiple = TRUE),
                          actionButton(ns("removePointsButton"), "Remove data point")
                   ),
                   column(3,
                          h4("Style points"),
                          selectInput(ns("activePoint"), label = "Style the point",
-                                     choices = NULL, selected = NA),
+                                     choices = c("Add a point ..." = ""), selected = NA),
                          checkboxInput(ns("hidePointLabel"), label = "Hide point label",
                                        value = FALSE),
                          colourInput(ns("pointColor"), label = "Point color",

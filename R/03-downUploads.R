@@ -10,7 +10,7 @@ downUploadsUI <- function(id, title) {
     fluidRow(
       sidebarPanel(width = 3,
                    selectInput(ns("activePlot"), label = "Select a saved plot",
-                               choices = NULL, selected = NULL),
+                               choices = c("Save or upload a plot ..." = "")),
                    tags$hr(),
                    # Export saved models ####
                    downloadModelUI(id = ns("modelDownload"),
@@ -19,7 +19,7 @@ downUploadsUI <- function(id, title) {
                                  label = "Upload plot object(s)")
       ),
       mainPanel(width = 8,
-                fluidRow(column(8, h4("View the Plot")),
+                fluidRow(column(8, h4("View the Selected Plot")),
                          column(4,
                                 align = "right",
                                 # dataExportButton(ns("exportData")),

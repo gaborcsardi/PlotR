@@ -11,7 +11,7 @@ multiplePlotsUI <- function(id, title) {
       sidebarPanel(width = 3,
                    selectInput(ns("activePlots"),
                                label = "Select saved plots",
-                               choices = NULL,
+                               choices = c("Save or upload plots ..." = ""),
                                multiple = TRUE#,
                                #selectize = TRUE
                    ),

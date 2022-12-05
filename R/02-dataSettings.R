@@ -12,8 +12,8 @@ dataSettingsUI <- function(id, label = "Data Settings") {
 
   list(
     tags$h4(label),
-    selectColumnsUI(id = ns("x"), label = "x"),
-    selectColumnsUI(id = ns("y"), label = "y"),
+    selectColumnsUI(id = ns("x"), label = "x", emptyChoices = emptyColumnChoices()),
+    selectColumnsUI(id = ns("y"), label = "y", emptyChoices = emptyColumnChoices()),
     checkboxInput(inputId = ns("outlierD"),
                   label = "Remove data outliers in y",
                   value = defaultDataOutlier()$outlierD, width = "100%"),
@@ -78,8 +78,11 @@ defaultDataOutlier <- function() {
   )
 }
 
+emptyColumnChoices <- function() {
+  c("Load a file ..." = "")
+}
 
-selectColumnsUI <- function(id, label) {
+selectColumnsUI <- function(id, label, emptyChoices) {
 
   ns <- NS(id)
   div(
@@ -96,27 +99,27 @@ selectColumnsUI <- function(id, label) {
       ns = ns,
       selectInput(ns("Point"),
                   label = paste("Select", label),
-                  choices = NULL),
+                  choices = emptyChoices),
     ),
     conditionalPanel(
       condition = "input.type == 'interval'",
       ns = ns,
       selectInput(ns("Min"),
                   label = paste("Lower bound for", label),
-                  choices = NULL),
+                  choices = emptyChoices),
       selectInput(ns("Max"),
                   label = paste("Upper bound for", label),
-                  choices = NULL)
+                  choices = emptyChoices)
     ),
     conditionalPanel(
       condition = "input.type == 'credInterval'",
       ns = ns,
       selectInput(ns("CredMin"),
                   label = paste("Lower bound for", label),
-                  choices = NULL),
+                  choices = emptyChoices),
       selectInput(ns("CredMax"),
                   label = paste("Upper bound for", label),
-                  choices = NULL),
+                  choices = emptyChoices),
       sliderInput(ns("CredPercent"),
                   label = "Credibility level",
                   min = 0, max = 100, post  = " %", value = 95)
@@ -126,20 +129,20 @@ selectColumnsUI <- function(id, label) {
       ns = ns,
       selectInput(ns("Mean"),
                   label = paste("Mean of", label),
-                  choices = NULL),
+                  choices = emptyChoices),
       selectInput(ns("SD"),
                   label = paste("SD of", label),
-                  choices = NULL)
+                  choices = emptyChoices)
     ),
     conditionalPanel(
       condition = "input.type == 'meanSEMSD'",
       ns = ns,
       selectInput(ns("Mean2"),
                   label = paste("Mean of", label),
-                  choices = NULL),
+                  choices = emptyChoices),
       selectInput(ns("SEMSD"),
                   label = paste("SEM SD of", label),
-                  choices = NULL)
+                  choices = emptyChoices)
     )
   )
 }

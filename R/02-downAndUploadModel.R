@@ -13,7 +13,7 @@ downloadModelUI <- function(id, label) {
     #             options = list(`actions-box` = TRUE),
     #             multiple = T),
     selectInput(ns("selectedModels"), label = NULL,
-                choices = NULL,
+                choices = c("Save or upload plots ..." = ""),
                 multiple = T),
     textAreaInput(ns("notes"), "Add notes"),
     downloadButton(ns("downloadModelButton"), "Download")
