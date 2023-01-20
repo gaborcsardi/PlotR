@@ -1,5 +1,11 @@
 # PlotR app development version
 
+## PlotR 23.01.1
+
+### New Features
+- show significant differences of the mean between a reference plot and one (or more) other 
+plots (#19)
+
 ## PlotR 22.12.1
 
 ### Updates

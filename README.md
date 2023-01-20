@@ -1,8 +1,14 @@
 # MPI-PlotR-App
 
-Access beta version: https://isomemoapp.com/app/plotr-beta
+### Access to online version:
+- beta version: https://isomemoapp.com/app/plotr-beta
 
-## Naming Conventions in R
+### Help and installation Instructions:
+- https://github.com/Pandora-IsoMemo/plotr/wiki
+
+----
+
+### Naming Conventions of the R package:
 
 - Numbers as Prefix. Grouped into files with same type of functionality
 - Higher number indicate that the functions are closer to the functionality of the app / higher abstraction level

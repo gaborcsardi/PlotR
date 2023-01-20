@@ -57,7 +57,29 @@ multiplePlotsUI <- function(id, title) {
                                         label = "Hide y axis of plots",
                                         choices = NULL,
                                         multiple = TRUE)
-                     ))
+                     )),
+                   tags$br(),
+                   conditionalPanel(
+                     condition = "output.showSignifStatus == true",
+                     ns = ns,
+                     checkboxInput(ns("showSignif"), label = "Show significant differences in red"),
+                     conditionalPanel(
+                       condition = "input.showSignif == true",
+                       ns = ns,
+                       fluidRow(
+                         column(6,
+                                selectInput(ns("referencePlot"),
+                                            label = "Reference plot",
+                                            choices = NULL,
+                                            multiple = FALSE)),
+                         column(6,
+                                sliderInput(ns("sigLevel"),
+                                            label = "Significance level",
+                                            min = 0.5, max = 0.999, value = 0.95, step = 0.001
+                                ))
+                       )
+                     )
+                   )
       ),
       mainPanel(width = 8,
                 fluidRow(column(9, h4("View Multiple Plots")),
@@ -147,11 +169,18 @@ multiplePlots <- function(input, output, session, savedData) {
     updateSelectInput(session, "yAxisToHide", choices = input$activePlots#,
                       #selected = getNamesToDrop(input$activePlots, input$combiType)
     )
+    updateSelectInput(session, "referencePlot", choices = input$activePlots)
+
 
     activePlotsNames(input$activePlots)
     nActivePlots(length(input$activePlots))
     activePlotsData(savedData()[input$activePlots])
   })
+
+  output$showSignifStatus <- reactive({
+    nActivePlots() >= 2
+  })
+  outputOptions(output, "showSignifStatus", suspendWhenHidden = FALSE)
 
   output$multiPlot <- renderPlot({
     req(names(activePlotsData()))
@@ -163,7 +192,11 @@ multiplePlots <- function(input, output, session, savedData) {
         combiType = input$combiType,
         nGridCols = input$nGridCols,
         xAxisToHide = input$xAxisToHide,
-        yAxisToHide = input$yAxisToHide
+        yAxisToHide = input$yAxisToHide,
+        showSig = input$showSignif,
+        referencePlot = input$referencePlot,
+        sigLevel = input$sigLevel
+
       )
     )
 

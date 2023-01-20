@@ -1,11 +1,31 @@
 makeMultiPlot <- function(valuesList, nMarginLines, combiType = "rowGrid", nGridCols = 2,
-                          xAxisToHide = NULL, yAxisToHide = NULL
+                          xAxisToHide = NULL, yAxisToHide = NULL, showSig = FALSE,
+                          referencePlot = NULL, sigLevel = 0.95
                           ){
 
   if (is.null(names(valuesList))) return(NULL)
 
-  if(combiType == "joinedPlot") {
+  if(showSig){
+    if(!is.null(referencePlot) & length(names(valuesList)) > 1){
+      referenceCurve <- valuesList[[referencePlot]]$plotValues$predictedData$evenlyOnX
 
+      for (q in names(valuesList)){
+        valuesList[[q]]$plotValues$predictedData$evenlyOnX$sig <- FALSE
+
+        relevantOverlap <- getRelevantOverlap(valuesOfQ = valuesList[[q]],
+                                              referenceCurve = referenceCurve,
+                                              sigLevel = sigLevel)
+
+        if(NROW(relevantOverlap)>0){
+          sigIndex <-
+            valuesList[[q]]$plotValues$predictedData$evenlyOnX$xVar %in% relevantOverlap$xVar
+          valuesList[[q]]$plotValues$predictedData$evenlyOnX$sig[sigIndex] <- TRUE
+        }
+      }
+    }
+  }
+
+  if(combiType == "joinedPlot") {
     par(mar = c(3 * (nMarginLines$bottom),
                 3 * (nMarginLines$left),
                 3 * (nMarginLines$top),
@@ -31,6 +51,34 @@ makeMultiPlot <- function(valuesList, nMarginLines, combiType = "rowGrid", nGrid
   }
 }
 
+
+#' Get Relevant Overlap
+#'
+#' @param valuesOfQ predictions of the curve q
+#' @param referenceCurve predictions of the reference curve
+#' @param sigLevel significance level
+getRelevantOverlap <- function(valuesOfQ, referenceCurve, sigLevel) {
+  #get relevant overlap
+  xVarsOverlapIndex <-
+    valuesOfQ$plotValues$predictedData$evenlyOnX$xVar >= min(referenceCurve$xVar) &
+    valuesOfQ$plotValues$predictedData$evenlyOnX$xVar <= max(referenceCurve$xVar)
+
+  relevantOverlap <- valuesOfQ$plotValues$predictedData$evenlyOnX[xVarsOverlapIndex, ]
+
+  #match closest points
+  for (i in 1:nrow(relevantOverlap)){
+    bestReferenceMatch <- which.min(abs(relevantOverlap$xVar[i] - referenceCurve$xVar))
+    pv <- pnorm(referenceCurve[bestReferenceMatch,]$Estimation - relevantOverlap$Estimation[i],0,
+                sqrt((relevantOverlap$SE[i])^2 + referenceCurve[bestReferenceMatch,]$SE^2))
+    if(min(pv*2, (1 - pv) * 2) < (1 - sigLevel)){
+      relevantOverlap$sig[i] <- TRUE
+    }
+  }
+  relevantOverlap <- relevantOverlap[relevantOverlap$sig,]
+
+  return(relevantOverlap)
+}
+
 makeSinglePlot <- function(plotValues, plotStyle){
   par(mar = c(4.1, 4.1, 4.1, 4.1))
   makePlot(plotValues = plotValues, plotStyle = plotStyle)
@@ -45,7 +93,6 @@ makePlot <- function(plotValues, plotStyle, hideXAxis = FALSE, hideYAxis = FALSE
            hideXAxis = hideXAxis,
            hideYAxis = hideYAxis
   )
-
   plotDataPoints(removeModelOutliers(plotValues$modelData$data),
                  xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
                  yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
@@ -259,6 +306,29 @@ plotPredictions <- function(predData,
             lwd = predWidth,
             lty = predLineType,
             col = predColor)
+
+
+  if("sig" %in% colnames(predData)){
+    segment <- 1
+    plotRPred$segment <- segment
+    for (j in 2:NROW(plotRPred)){
+      if(plotRPred$sig[j] == TRUE & plotRPred$sig[j-1] == FALSE){
+        segment <- segment + 1
+      }
+      plotRPred$segment[j] <- segment
+    }
+    segments <- max(plotRPred$segment)
+    for (i in 1:segments){
+      plotLines(hide = FALSE,
+                plotRPred[plotRPred$sig == TRUE & plotRPred$segment == i, centerType] ~
+                  plotRPred$xVar[plotRPred$sig == TRUE & plotRPred$segment == i],
+                lwd = 3,
+                lty = 1,
+                col = "#FF0000")
+
+    }
+  }
+
   plotLines(hide = uncertaintyHide,
             getUncertaintyLimit(plotRPred,
                                 type = errorType,
