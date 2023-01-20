@@ -196,7 +196,6 @@ multiplePlots <- function(input, output, session, savedData) {
         showSig = input$showSignif,
         referencePlot = input$referencePlot,
         sigLevel = input$sigLevel
-
       )
     )
 
