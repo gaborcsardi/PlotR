@@ -2,7 +2,7 @@
 
 source("tests/testthat/setup-testHelpers.R")
 
-testData <- read.csv("tests/testthat/plotR2.csv")
+testData <- utils::read.csv("tests/testthat/plotR2.csv")
 
 combiInputs <- findTestCombis(xCols = c(min = "min.BC.AD", max = "max.BC.AD",
                                         mean = "min.BC.AD", sd = "BC_AD_SD"),

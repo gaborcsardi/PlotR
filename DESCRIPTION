@@ -1,6 +1,6 @@
 Package: PlotR
 Title: Plot things
-Version: 23.01.1
+Version: 23.01.2
 Authors@R: c(
     person("Marcus", "Gross", email = "marcus.gross@inwt-statistics.de", role = c("aut", "cre")),
     person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
@@ -15,12 +15,11 @@ Imports:
   dplyr,
   DT,
   futile.logger,
+  DataTools (>= 23.1.6),
   jsonlite,
   magrittr,
   mgcv,
   openxlsx,
-  readxl,
-  readr,
   Rfast,
   rlang,
   shiny,
