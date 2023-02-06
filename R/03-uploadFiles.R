@@ -3,46 +3,49 @@
 uploadFilesUI <- function(id, title) {
   ns <- NS(id)
 
-  tabPanel(
-    title,
-    id = id,
-    value = id,
-    fluidRow(
-      sidebarPanel(width = 3,
-                   importDataUI(ns("data"), "Import Data"),
-                   tags$hr(),
-                   selectInput(ns("activeFile"),
-                               label = "View the imported file",
-                               choices = c("Import a file ..." = "")),
-                   tags$hr()
-      ),
-      mainPanel(width = 8,
-                DTOutput(ns("preview"))
-      )
-    )
-  )
+  tabPanel(title,
+           id = id,
+           value = id,
+           fluidRow(
+             sidebarPanel(
+               style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
+               importDataUI(ns("data"), "Import Data"),
+               tags$hr(),
+               selectInput(
+                 ns("activeFile"),
+                 label = "View the imported file",
+                 choices = c("Import a file ..." = "")
+               ),
+               tags$hr()
+             ),
+             mainPanel(width = 8,
+                       DTOutput(ns("preview")))
+           ))
 }
 
 
 #' @export
 #' @rdname shinyModule
 uploadFiles <- function(input, output, session) {
-
   loadedFiles <- reactiveVal(list())
   activeFile <- reactiveVal(NULL)
 
-  importedData <- callModule(importData, "data",
-                             customWarningChecks = list(
-                               checkWarningEmptyValues
-                             ),
-                             customErrorChecks = list(
-                               checkErrorNoNumericColumns
-                             ))
+  importedData <- importDataServer(
+    "data",
+    customWarningChecks = list(reactive(checkWarningEmptyValues)),
+    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+    ignoreWarnings = TRUE,
+    defaultSource = "file"
+  )
 
   observe({
     req(names(loadedFiles()))
-    updateSelectInput(session, "activeFile", choices = names(loadedFiles()),
-                      selected = names(loadedFiles())[length(loadedFiles())])
+    updateSelectInput(
+      session,
+      "activeFile",
+      choices = names(loadedFiles()),
+      selected = names(loadedFiles())[length(loadedFiles())]
+    )
   })
 
   activeFile <- reactive({
@@ -81,13 +84,15 @@ uploadFiles <- function(input, output, session) {
 #' @param fileName (character) filename
 incIndexOfFile <- function(fileName) {
   # extract type
-  fileType <- regmatches(fileName, regexpr(".[[:alnum:]]*$", fileName))
+  fileType <-
+    regmatches(fileName, regexpr(".[[:alnum:]]*$", fileName))
 
   # remove type
   fileName <- gsub(".[[:alnum:]]*$", "", fileName)
 
   # extract index
-  currentIndex <- regmatches(fileName, regexpr("\\([[:digit:]]+\\)$", fileName))
+  currentIndex <-
+    regmatches(fileName, regexpr("\\([[:digit:]]+\\)$", fileName))
 
   # inc index
   if (length(currentIndex) == 0) {
@@ -100,6 +105,8 @@ incIndexOfFile <- function(fileName) {
       as.numeric() + 1
 
     # replace with new index
-    gsub("\\([[:digit:]]+\\)$" , paste0("(", newIndex, ")", fileType) , fileName)
+    gsub("\\([[:digit:]]+\\)$" ,
+         paste0("(", newIndex, ")", fileType) ,
+         fileName)
   }
 }
