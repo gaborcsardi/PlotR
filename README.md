@@ -1,4 +1,4 @@
-# MPI-PlotR-App
+# PlotR
 
 ### Access to online version:
 - beta version: https://isomemoapp.com/app/plotr-beta
