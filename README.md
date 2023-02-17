@@ -7,4 +7,4 @@
 - https://github.com/Pandora-IsoMemo/plotr/wiki
 
 ### Release Notes:
-- https://github.com/Pandora-IsoMemo/plotr/blob/main/NEWS.md
+- see `NEWS.md`
