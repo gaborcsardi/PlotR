@@ -181,7 +181,6 @@ fitPlotRModelMC <- function(data,
                   progressMessage = progressMessage,
                   isCheck = isCheck)
   })
-
   res <- ret[[1]]
   res$beta <- do.call("rbind", lapply(1:length(ret), function(x) ret[[x]]$beta))
   res$betaSigma <- do.call("rbind", lapply(1:length(ret), function(x) ret[[x]]$betaSigma))
@@ -248,7 +247,7 @@ fitPlotRModel <- function(data,
   ######################################
   ###Tuningparameter der a-priori Verteilungen:
   ######################################
-  a.eps <- 1E-5
+  a.eps <- 0.5
   b.eps <- 1E-5
   a.mu <- 1E-5
   b.mu <- 1E-5
@@ -330,7 +329,6 @@ fitPlotRModel <- function(data,
       if (!sdVar){
         scale <- (b.eps + 0.5 * sum((((data$Y - XX2 %*% beta)) ^ 2))) ^ - 1
         sigma <<- 1 / rgamma(1, shape = a.eps + n / 2, scale = scale)
-
       } else {
         scale0 <- (b.eps + 0.5 * sum((((data$Y - XX2 %*% beta)) ^ 2))) ^ - 1
         sigma0 <- 1 / rgamma(1, shape = a.eps + n / 2, scale = scale0)

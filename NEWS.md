@@ -1,5 +1,10 @@
 # PlotR app development version
 
+## Version 23.03.2
+
+### Updates
+- tighten prior for sigma (#24)
+
 ## Version 23.03.1
 
 ### Bug fixes
