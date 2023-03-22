@@ -93,32 +93,56 @@ makePlot <- function(plotValues, plotStyle, hideXAxis = FALSE, hideYAxis = FALSE
            hideXAxis = hideXAxis,
            hideYAxis = hideYAxis
   )
-  plotDataPoints(removeModelOutliers(plotValues$modelData$data),
-                 xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
-                 yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
-                 stylePoints = plotStyle$dataPoints,
-                 styleIntervals = plotStyle$dataIntervals)
 
+  # points are drawn in the following order
+  # 1. plot normal points ----
+  if (!is.null(plotValues$modelData$data)) {
+    # plot data without data and model outliers
+    plotDataPoints(removeModelOutliers(plotValues$modelData$data),
+                   xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
+                   yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
+                   stylePoints = plotStyle$dataPoints,
+                   styleIntervals = plotStyle$dataIntervals)
+  } else {
+    # plot data without data outliers
+    plotDataPoints(removeDataOutliers(plotValues$selectedData),
+                   xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
+                   yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
+                   stylePoints = plotStyle$dataPoints,
+                   styleIntervals = plotStyle$dataIntervals)
+  }
+
+  # 2. plot outliers ----
+  # plot data outliers
   plotDataPoints(selectDataOutliers(plotValues$selectedData),
                  xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
                  yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
                  stylePoints = plotStyle$dataOutliers,
                  styleIntervals = plotStyle$dataOutlierIntervals)
 
-  plotDataPoints(selectModelOutliers(plotValues$modelData$data),
-                 xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
-                 yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
-                 stylePoints = plotStyle$modelOutliers,
-                 styleIntervals = plotStyle$modelOutlierIntervals)
+  if (!is.null(plotValues$modelData$data)) {
+    # plot model outliers
+    plotDataPoints(selectModelOutliers(plotValues$modelData$data),
+                   xNames = xSel$colNames, xType = xSel$type, xCredPercent = xSel$credPercent,
+                   yNames = ySel$colNames, yType = ySel$type, yCredPercent = ySel$credPercent,
+                   stylePoints = plotStyle$modelOutliers,
+                   styleIntervals = plotStyle$modelOutlierIntervals)
+  }
 
+
+
+  # 3. plot prediction ----
+  if (!is.null(plotValues$predictedData)) {
+    plotPredictions(predData = plotValues$predictedData$evenlyOnX,
+                    centerType = plotValues$plottedTypeOfPrediction$centerType,
+                    errorType = plotValues$plottedTypeOfPrediction$errorType,
+                    uncertaintyFactor = plotValues$plottedTypeOfPrediction$SDFactor,
+                    stylePrediction = plotStyle$predictionLine,
+                    styleUncertainty = plotStyle$modelUncertainty)
+  }
+
+  # 4. plot manually added data ----
   plotDataPointsAdd(pointDat = plotStyle$morePoints)
-
-  plotPredictions(predData = plotValues$predictedData$evenlyOnX,
-                  centerType = plotValues$plottedTypeOfPrediction$centerType,
-                  errorType = plotValues$plottedTypeOfPrediction$errorType,
-                  uncertaintyFactor = plotValues$plottedTypeOfPrediction$SDFactor,
-                  stylePrediction = plotStyle$predictionLine,
-                  styleUncertainty = plotStyle$modelUncertainty)
 }
 
 plotAxes <- function(plotStyle,
@@ -273,7 +297,7 @@ maxRange <- function(range) {
   max(range) + 0.5*diff(range) %>% signif(digits = 3)
 }
 
-getRange <- function(data, type, credPercent, estimation) {
+getRange <- function(data, type, credPercent, estimation = NULL) {
 
   dataPoints <- getMean(data, dataType = type)
   dataDeviation <- getUncertainty(data, dataType = type, credPercent = credPercent, zeroIfPoint = TRUE)

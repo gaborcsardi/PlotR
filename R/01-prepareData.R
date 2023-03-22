@@ -1,3 +1,53 @@
+#' Select Data Wrapper
+#'
+#' @param plotValues (list) list with all values required for the plot
+#' @param activeFile (character) name of the selected file
+#' @param activeFileData (data.frame) content of the selected file
+#' @param dataSelection (list) list of reactive selected columns of the current file
+selectDataWrapper <- function(plotValues, activeFile, activeFileData, dataSelection){
+  plotValues$defaultXRange <- NULL
+  plotValues$modelData <- NULL
+  plotValues$predictedData <- NULL
+
+  plotValues$activeFile <- activeFile
+  plotValues$activeFileData <- activeFileData
+  plotValues$dataSettings <- list(xColumns = dataSelection$xColumns(),
+                                  yColumns = dataSelection$yColumns(),
+                                  dataOutlier = dataSelection$dataOutlier())
+
+  xSelection <- getSelection(plotValues$dataSettings$xColumns)
+  ySelection <- getSelection(plotValues$dataSettings$yColumns)
+
+  plotValues$selectedData <-
+    activeFileData[, unlist(c(xSelection$colNames, ySelection$colNames))]
+
+  if (any(!sapply(plotValues$selectedData, is.numeric))) {
+    # transform to numeric
+    plotValues$selectedData <- toNumericCols(plotValues$selectedData)
+  }
+
+  if (!is.null(plotValues$selectedData) && any(is.na(plotValues$selectedData))) {
+    plotValues$selectedData <- na.omit(plotValues$selectedData)
+  }
+
+  if (is.null(plotValues$selectedData)) return(plotValues)
+
+  plotValues$selectedData <- addColumnDataOutlier(
+    selectedData = plotValues$selectedData,
+    ySelection = ySelection,
+    dataOutlier = plotValues$dataSettings$dataOutlier
+  )
+
+  plotValues$defaultXRange <- getRange(
+    data = plotValues$selectedData[, unlist(xSelection$colNames),
+                                   drop = FALSE],
+    type = xSelection$type,
+    credPercent = xSelection$credPercent
+  )
+
+  plotValues
+}
+
 getPrepData <- function(data, xSelection, ySelection){
   data <- removeDataOutliers(data)
 

@@ -16,6 +16,7 @@ downloadModelUI <- function(id, label) {
                 choices = c("Save or upload plots ..." = ""),
                 multiple = T),
     textAreaInput(ns("notes"), "Add notes"),
+    checkboxInput(ns("onlyInputs"), "Store only data and model options"),
     downloadButton(ns("downloadModelButton"), "Download")
   )
 }
@@ -52,6 +53,12 @@ downloadModel <- function(input, output, session, savedData, uploadedNotes){
 
       req(savedData(), input$selectedModels)
       model <- savedData()[input$selectedModels]
+
+      if (input$onlyInputs) {
+        model <- model %>%
+          removeModelOutputs()
+      }
+
       save(model, file = modelfile)
       writeLines(input$notes %>% addPackageVersionNo(),
                  notesfile)
@@ -59,6 +66,24 @@ downloadModel <- function(input, output, session, savedData, uploadedNotes){
     }
   )
 
+}
+
+addPackageVersionNo <- function(txt){
+  versionNo <- packageVersion("PlotR") %>%
+    as.character()
+
+  paste0(txt, "\n\n", "PlotR version ", versionNo, " .")
+}
+
+#' Remove Model Outputs
+#'
+#' @param models list of model objects to be saved
+removeModelOutputs <- function(models) {
+  lapply(models, function(model) {
+    model$plotValues$modelData <- NULL
+    model$plotValues$predictedData <- NULL
+    model
+  })
 }
 
 # Upload a plot ####
@@ -70,20 +95,52 @@ uploadModelUI <- function(id, label) {
   tagList(
     tags$hr(),
     tags$h4(label),
-    fileInput(ns("uploadModel"), label = NULL)
+    fileInput(ns("uploadModel"), label = NULL, accept = ".zip"),
+    remoteModelsUI(ns("remoteModels"))
   )
 }
 
 #' @rdname shinyModule
 #' @param uploadedNotes (reactive) variable that stores content for README.txt
-uploadModel <- function(input, output, session, loadedFiles, savedData,
+uploadModel <- function(input,
+                        output,
+                        session,
+                        loadedFiles,
+                        savedData,
+                        #reset,
                         uploadedNotes){
+  pathToModel <- reactiveVal(NULL)
 
   observeEvent(input$uploadModel, {
+    logDebug("Entering (%s) observeEvent(input$uploadModel)", session$ns(""))
+    pathToModel(input$uploadModel$datapath)
+  })
+
+  # observeEvent(reset(), {
+  #   logDebug("Entering (%s) observeEvent(reset())", session$ns(""))
+  #   req(reset())
+  #   updateSelectInput(session, "remoteModel", selected = list())
+  #   pathToModel(NULL)
+  # })
+
+  pathToRemote <- remoteModelsServer("remoteModels",
+                                     githubRepo = "plotr",
+                                     rPackageName = "PlotR",
+                                     rPackageVersion = "PlotR" %>%
+                                       packageVersion() %>%
+                                       as.character())
+
+  observeEvent(pathToRemote(), {
+    logDebug("Entering (%s) observeEvent(pathToRemote())", session$ns(""))
+    pathToModel(pathToRemote())
+  })
+
+  observeEvent(pathToModel(), {
+    logDebug("Entering (%s) observeEvent(pathToModel())", session$ns(""))
     model <- NULL
 
     res <- try({
-      zip::unzip(input$uploadModel$datapath)
+      zip::unzip(pathToModel())
       load("model.Rdata")
     })
 
@@ -98,6 +155,27 @@ uploadModel <- function(input, output, session, loadedFiles, savedData,
         type = "error"
       )
     } else {
+      if (any(names(model) %in% names(savedData()))) {
+        nameExists <- which(names(model) %in% names(savedData()))
+        shinyalert(
+          title = "Duplicated plot names",
+          text = paste(
+            "Plot name\n",
+            paste(names(model)[nameExists], collapse = ", "),
+            "\n already exist and was updated."
+          ),
+          type = "warning"
+        )
+
+        # rename duplicated plot names
+        newNames <- names(model)
+        while (any(newNames %in% names(savedData()))) {
+          nameExists <- which(newNames %in% names(savedData()))
+          newNames[nameExists] <- lapply(newNames[nameExists], incIndexOfName)
+          names(model) <- newNames
+        }
+      }
+
       savedData(c(savedData(), model))
       updateSelectInput(session, "activePlot", choices = names(savedData()),
                         selected = names(savedData())[length(savedData())])
@@ -127,7 +205,7 @@ uploadModel <- function(input, output, session, loadedFiles, savedData,
 
       uploadedNotes(readLines("README.txt")[[1]])
 
-      shinyalert("Model loaded", type = "success")
+      shinyalert("Upload finished", type = "success")
     }
 
     # clean up
@@ -137,9 +215,29 @@ uploadModel <- function(input, output, session, loadedFiles, savedData,
   })
 }
 
-addPackageVersionNo <- function(txt){
-  versionNo <- packageVersion("PlotR") %>%
-    as.character()
+#' Inc Index Of Name
+#'
+#' If the name has no index, add a new index: "(1)". If an index already exists, increase it by one.
+#'
+#' @param name (character) name
+incIndexOfName <- function(name) {
+  # extract index
+  currentIndex <-
+    regmatches(name, regexpr("\\([[:digit:]]+\\)$", name))
 
-  paste0(txt, "\n\n", "PlotR version ", versionNo, " .")
+  # inc index
+  if (length(currentIndex) == 0) {
+    paste0(name, "(1)")
+  } else {
+    # get new index
+    newIndex <- currentIndex %>%
+      gsub(pattern = "\\(|\\)",
+           replacement = "") %>%
+      as.numeric() + 1
+
+    # replace with new index
+    gsub("\\([[:digit:]]+\\)$" ,
+         paste0("(", newIndex, ")") ,
+         name)
+  }
 }

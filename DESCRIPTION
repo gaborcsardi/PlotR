@@ -1,6 +1,6 @@
 Package: PlotR
 Title: Plot things
-Version: 23.03.2
+Version: 23.03.3
 Authors@R: c(
     person("Marcus", "Gross", email = "marcus.gross@inwt-statistics.de", role = c("aut", "cre")),
     person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
@@ -14,10 +14,10 @@ Remotes:
   github::ben-aaron188/rgpt3
 Imports:
   colourpicker,
+  DataTools (>= 23.03.2),
   dplyr,
   DT,
   futile.logger,
-  DataTools (>= 23.03.1),
   jsonlite,
   magrittr,
   mgcv,
