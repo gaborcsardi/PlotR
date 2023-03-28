@@ -1,6 +1,7 @@
 # PlotR
 
 ### Access to online version:
+- MAIN version: https://isomemoapp.com/app/plotr
 - BETA version: https://isomemoapp.com/app/plotr-beta
 
 ### Help and installation instructions:
