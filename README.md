@@ -9,3 +9,6 @@
 
 ### Release notes:
 - see `NEWS.md`
+
+### Folder for online models
+- `inst/app/predefinedModels`
