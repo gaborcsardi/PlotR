@@ -156,6 +156,7 @@ getCommonPredictions <- function(activeDataList, xRange, isTest = FALSE) {
   if (isTest) {
     c(setNames(list(xVar), "xVar"),
       lapply(activeDataList, function(x) {
+        # do not tryCatchWithErrors() during test
         predictAdditionalData(moreMean = xVar,
                               moreSD = 0,
                               plotValues = x$plotValues)[, "Estimation"]}

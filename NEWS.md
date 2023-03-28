@@ -1,5 +1,10 @@
 # PlotR app development version
 
+## Version 23.03.4
+
+### Updates
+- warning after modeling if the sample size is below 8 (#24)
+
 ## Version 23.03.3
 
 ### New Features

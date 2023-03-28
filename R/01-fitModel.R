@@ -7,7 +7,7 @@ utils::globalVariables(c("standardizedX", "Date3"))
 #'
 #' @param plotValues (list) list with all values required for the plot
 #' @param modelParameters (list) list of settings for the model
-fitModelWrapper <- function(plotValues,
+fitModel <- function(plotValues,
                             modelParameters){
   plotValues$modelData <- NULL
   plotValues$predictedData <- NULL
@@ -51,17 +51,24 @@ fitModelWrapper <- function(plotValues,
 }
 
 getModelFit <- function(data,
-                     prepData,
-                     xSelection, ySelection,
-                     modelParameters,
-                     isCheck = FALSE
-){
-  modelOutput <- fitModel(
-    prepData = prepData,
-    modelParameters = modelParameters,
-    progressMessage = "Calculating Model",
-    isCheck = isCheck
-  )
+                        prepData,
+                        xSelection, ySelection,
+                        modelParameters,
+                        isCheck = FALSE){
+  modelOutput <- prepData %>%
+    fitPlotRModelMC(K = modelParameters$K,
+                    burnin = modelParameters$burnin,
+                    iter = modelParameters$iter,
+                    penalty = modelParameters$const,
+                    smoothConst = modelParameters$smoothConst,
+                    nChains = modelParameters$nChains,
+                    sdVar = modelParameters$sdVar,
+                    progressMessage = "Calculating Model",
+                    isCheck = isCheck
+    ) %>%
+    tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed",
+                                  warningTitle = "Warning",
+                                  alertStyle = "shinyalert")
 
   if (is.null(modelOutput)) {
     data$isModelOutlier <- FALSE
@@ -83,12 +90,23 @@ getModelFit <- function(data,
                              yType = ySelection$type,
                              outlierValue = modelParameters$outlierValue)
 
-    modelOutput <- fitModel(
-      prepData = getPrepData(data = data,
-                             xSelection = xSelection, ySelection = ySelection),
-      modelParameters = modelParameters,
-      progressMessage = "Removing model outliers",
-      isCheck = isCheck)
+    modelOutput <- data %>%
+      getPrepData(xSelection = xSelection,
+                  ySelection = ySelection) %>%
+      fitPlotRModelMC(
+        K = modelParameters$K,
+        burnin = modelParameters$burnin,
+        iter = modelParameters$iter,
+        penalty = modelParameters$const,
+        smoothConst = modelParameters$smoothConst,
+        nChains = modelParameters$nChains,
+        sdVar = modelParameters$sdVar,
+        progressMessage = "Removing model outliers",
+        isCheck = isCheck
+      ) %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed",
+                                    warningTitle = "Warning",
+                                    alertStyle = "shinyalert")
 
     list(data = data,
          modelOutput = modelOutput
@@ -100,35 +118,6 @@ getModelFit <- function(data,
   }
 }
 
-fitModel <- function(prepData,
-                     modelParameters,
-                     progressMessage = "Calculating Model",
-                     isCheck = FALSE){
-
-  K <- modelParameters$K
-  smoothConst <- modelParameters$smoothConst
-  burnin <- modelParameters$burnin
-  iter <- modelParameters$iter
-  nChains <- modelParameters$nChains
-  sdVar <- modelParameters$sdVar
-  const <- modelParameters$const
-
-  tryCatchWithMessage(
-    fitPlotRModelMC(
-      prepData,
-      K = K,
-      burnin = burnin,
-      iter = iter,
-      penalty = const,
-      smoothConst = smoothConst,
-      nChains = nChains,
-      sdVar = sdVar,
-      progressMessage = progressMessage,
-      isCheck = isCheck
-    )
-  )
-}
-
 fitPlotRModelMC <- function(data,
                             K = 24, burnin = 1000,
                             iter = 24000, penalty = 2,
@@ -137,14 +126,13 @@ fitPlotRModelMC <- function(data,
                             sdVar = FALSE,
                             progressMessage = "Calculating Model",
                             isCheck = FALSE){
-
   n <- nrow(data)
   if (n < K) {
-    shinyalert("Not enough rows for running the model.",
-               "Please use more data rows, increase the sd for outlier removal or
-                     decrease the number of basis functions.",
-               type = "error")
-    return(NULL)
+    stop("Not enough rows for running the model. Please use more data rows, increase the sd for outlier removal or decrease the number of basis functions.")
+  }
+
+  if (n < 8) {
+    warning("Estimation of the standard deviation / the SEM with nonlinear models may not be reliable for sample sizes below 8.")
   }
 
   ret <- lapply(1:nChains, function(x){

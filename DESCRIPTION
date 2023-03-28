@@ -1,6 +1,6 @@
 Package: PlotR
 Title: Plot things
-Version: 23.03.3
+Version: 23.03.4
 Authors@R: c(
     person("Marcus", "Gross", email = "marcus.gross@inwt-statistics.de", role = c("aut", "cre")),
     person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),

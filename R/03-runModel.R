@@ -248,7 +248,7 @@ runModel <- function(input, output, session, loadedFiles) {
       selectDataWrapper(activeFile = input$activeFile,
                         activeFileData = activeFileData(),
                         dataSelection = currentDataSelection) %>%
-      fitModelWrapper(modelParameters = currentModelParams())
+      fitModel(modelParameters = currentModelParams())
 
     plotStyle$xRange <- plotValues$defaultXRange
     plotStyle$xAxisLabel$text <-
