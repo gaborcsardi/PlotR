@@ -9,26 +9,19 @@ runModelUI <- function(id, title) {
            fluidRow(
              sidebarPanel(
                style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
-               fluidRow(
-                 column(8,
-                        selectInput(
-                          ns("activeFile"),
-                          label = "Select a file",
-                          choices = c("Import a file ..." = "")
-                        )),
-                 column(
-                   4,
-                   align = "left",
-                   style = "margin-top: 16px;",
-                   actionButton(ns("loadFile"), "Load", width = "90%")
-                 )
+               selectInput(
+                 ns("activeFile"),
+                 label = "Select a data file and press 'Load'",
+                 choices = c("Import a file ..." = ""),
+                 width = "100%"
                ),
-               tags$br(),
+               actionButton(ns("loadFile"), "Load", width = "40%"),
+               tags$hr(),
                dataSettingsUI(ns("settings"), "Data Settings"),
                tags$br(),
                modelSettingsUI(ns("modSettings"), "Model Settings"),
                tags$br(),
-               actionButton(ns("calculateModel"), "Run Model")
+               actionButton(ns("calculateModel"), "Run Model", width = "40%")
              ),
              mainPanel(
                width = 8,
