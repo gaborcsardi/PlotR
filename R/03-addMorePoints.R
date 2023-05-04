@@ -8,7 +8,8 @@ addMorePointsUI <- function(id, title) {
            value = id,
            fluidRow(
              sidebarPanel(
-               style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
+               style = "position:fixed; width:23%; max-width:500px; overflow-y:auto; height:88%",
+               width = 3,
                selectInput(
                  ns("activePlot"),
                  label = "Select a saved plot",
@@ -225,8 +226,14 @@ addMorePoints <- function(input, output, session, savedData) {
   # render plot ####
   values <- reactiveValues(plot = NULL)
   output$styledPlot <- renderPlot({
+    validate(
+      need(input$activePlot, "Select a plot ...")
+    )
     req(input$activePlot)
-    req(activePlotValues$predictedData$evenlyOnX)
+    validate(
+      need(!is.null(activePlotValues$defaultXRange), "Data not valid ...")
+    )
+
     makeSinglePlot(
       reactiveValuesToList(activePlotValues),
       reactiveValuesToList(activePlotStyle)
@@ -246,21 +253,21 @@ addMorePoints <- function(input, output, session, savedData) {
   # delete plot ####
   callModule(deletePlot, "deletingPlot", savedData = savedData)
 
-  dataFun <- reactive({
-    req(input$activePlot)
-    req(activePlotValues$modelData)
-    function(xVar, quantile) {
-      savedData <-
-        predictPipe(
-          plotRModel = activePlotValues$modelData$modelOutput,
-          xCol = activePlotValues$prepData$X,
-          xVar = xVar,
-          yName = activePlotValues$ySelection$colNames$colName1,
-          quantile = quantile
-        )
-      return(savedData)
-    }
-  })
+  # dataFun <- reactive({
+  #   req(input$activePlot)
+  #   req(activePlotValues$modelData)
+  #   function(xVar, quantile) {
+  #     savedData <-
+  #       predictPipe(
+  #         plotRModel = activePlotValues$modelData$modelOutput,
+  #         xCol = activePlotValues$prepData$X,
+  #         xVar = xVar,
+  #         yName = activePlotValues$ySelection$colNames$colName1,
+  #         quantile = quantile
+  #       )
+  #     return(savedData)
+  #   }
+  # })
 
   #callModule(dataExport, "exportData", dat = dataFun, filename = "modelData")
   callModule(plotExport, "export", reactive(values$plot))

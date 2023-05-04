@@ -8,7 +8,8 @@ postProcessingUI <- function(id, title) {
            value = id,
            fluidRow(
              sidebarPanel(
-               style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
+               style = "position:fixed; width:23%; max-width:500px; overflow-y:auto; height:88%",
+               width = 3,
                selectInput(
                  ns("activePlot"),
                  label = "Select a saved plot",
@@ -227,8 +228,10 @@ postProcessing <- function(input, output, session, savedData) {
       smoothConst = postPlotValues$modelParameters$smoothConst,
       postProcessing = TRUE,
       ppValues = ppValues
-    )
+    ) %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Prediction failed", alertStyle = "shinyalert")
 
+    req(!is.null(predictedData))
     postPlotValues$predictedData <- predictedData
 
     postPlotStyle <- savedData()[[input$activePlot]]$plotStyle
@@ -277,13 +280,23 @@ postProcessing <- function(input, output, session, savedData) {
   })
 
   output$viewSelectedPlot <- renderPlot({
+    validate(
+      need(input$activePlot, "Select a plot ...")
+    )
     req(input$activePlot)
+    validate(
+      need(!is.null(savedData()[[input$activePlot]]$plotValues$defaultXRange), "Data not valid ...")
+    )
+
     makeSinglePlot(savedData()[[input$activePlot]]$plotValues,
                    savedData()[[input$activePlot]]$plotStyle)
   })
 
   output$viewPostPlot <- renderPlot({
-    req(activePostPlot())
+    validate(
+      need(activePostPlot(), "Apply post processing ...")
+    )
+
     makeSinglePlot(activePostPlot()$plotValues, activePostPlot()$plotStyle)
     values$plot <- recordPlot()
   })

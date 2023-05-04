@@ -8,6 +8,7 @@ predictAdditionalData <- function(moreMean, moreSD,
                                   plotValues,
                                   moreNSample = NULL) {
 
+  if (is.null(plotValues$modelData$modelOutput)) stop("Cannot predict data! No model output found.")
   modelData <- plotValues$modelData$modelOutput
   prepData <- getPrepData(data = plotValues$selectedData,
               xSelection = getSelection(plotValues$dataSettings$xColumns),
@@ -44,7 +45,7 @@ deriveExplanatory <- function(moreMean, moreSD,
                               graphName,
                               moreNSample = NULL,
                               isTest = FALSE) {
-
+  if (is.null(plotValues$modelData$modelOutput)) stop("Cannot derive explanatory! No model output found.")
   modelData <- plotValues$modelData$modelOutput
   prepData <- getPrepData(data = plotValues$selectedData,
                           xSelection = getSelection(plotValues$dataSettings$xColumns),
@@ -155,6 +156,7 @@ getCommonPredictions <- function(activeDataList, xRange, isTest = FALSE) {
   if (isTest) {
     c(setNames(list(xVar), "xVar"),
       lapply(activeDataList, function(x) {
+        # do not tryCatchWithErrors() during test
         predictAdditionalData(moreMean = xVar,
                               moreSD = 0,
                               plotValues = x$plotValues)[, "Estimation"]}
@@ -168,11 +170,16 @@ getCommonPredictions <- function(activeDataList, xRange, isTest = FALSE) {
         c(setNames(list(xVar), "xVar"),
           lapply(activeDataList, function(x) {
             incProgress(1 / length(activeDataList))
-            predictAdditionalData(moreMean = xVar,
-                                  moreSD = 0,
-                                  plotValues = x$plotValues)[, "Estimation"]}
+            prediction <- predictAdditionalData(moreMean = xVar,
+                                                moreSD = 0,
+                                                plotValues = x$plotValues) %>%
+              tryCatchWithWarningsAndErrors(errorTitle = paste("Prediction failed for", x$plotName),
+                                            alertStyle = "shinyalert")
+            if (is.null(prediction)) return(NULL)
+            prediction[, "Estimation"]}
           )) %>%
-          bind_cols()
+          bind_cols() %>%
+          tryCatchWithWarningsAndErrors(errorTitle = "Common Prediction failed", alertStyle = "shinyalert")
       })
   }
 }

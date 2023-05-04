@@ -8,7 +8,8 @@ runModelUI <- function(id, title) {
            value = id,
            fluidRow(
              sidebarPanel(
-               style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
+               style = "position:fixed; width:23%; max-width:500px; overflow-y:auto; height:88%",
+               width = 3,
                selectInput(
                  ns("activeFile"),
                  label = "Select a data file and press 'Load'",
@@ -18,6 +19,8 @@ runModelUI <- function(id, title) {
                actionButton(ns("loadFile"), "Load", width = "40%"),
                tags$hr(),
                dataSettingsUI(ns("settings"), "Data Settings"),
+               actionButton(ns("plotData"), "Plot Data", width = "40%"),
+               tags$br(),
                tags$br(),
                modelSettingsUI(ns("modSettings"), "Model Settings"),
                tags$br(),
@@ -207,17 +210,39 @@ runModel <- function(input, output, session, loadedFiles) {
     currentModelParams(modelParameters())
   })
 
+  # plot data ----
+
+  observe({
+    req(activeFileData())
+
+    plotValues <- plotValues %>%
+      selectDataWrapper(activeFile = input$activeFile,
+                        activeFileData = activeFileData(),
+                        dataSelection = currentDataSelection)
+
+    plotStyle$xAxisLabel$text <-
+      cleanLabel(plotValues$dataSettings$xColumns)
+    plotStyle$yAxisLabel$text <-
+      cleanLabel(plotValues$dataSettings$yColumns)
+
+    plotStyle$xRange <- plotValues$defaultXRange
+    plotStyle$yRange <- getRange(
+      data = plotValues$selectedData[, unlist(getSelection(plotValues$dataSettings$yColumns)$colNames), drop = FALSE],
+      type = getSelection(plotValues$dataSettings$yColumns)$type,
+      credPercent = getSelection(plotValues$dataSettings$yColumns)$credPercent
+    )
+  }) %>%
+    bindEvent(input$plotData)
+
   # calculate model ####
   observeEvent(input$calculateModel, {
     req(activeFileData())
 
-    plotValues <- getPlotValues(
-      plotValues = plotValues,
-      activeFile = input$activeFile,
-      activeFileData = activeFileData(),
-      dataSelection = currentDataSelection,
-      modelParameters = currentModelParams()
-    )
+    plotValues <- plotValues %>%
+      selectDataWrapper(activeFile = input$activeFile,
+                        activeFileData = activeFileData(),
+                        dataSelection = currentDataSelection) %>%
+      fitModel(modelParameters = currentModelParams())
 
     plotStyle$xRange <- plotValues$defaultXRange
     plotStyle$xAxisLabel$text <-
@@ -262,8 +287,9 @@ runModel <- function(input, output, session, loadedFiles) {
 
   # render plot ####
   output$plot <- renderPlot({
-    if (is.null(plotValues$predictedData$evenlyOnX))
-      return(NULL)
+    validate(
+      need(!is.null(plotValues$defaultXRange), "Load a plot ...")
+    )
 
     makeSinglePlot(reactiveValuesToList(plotValues),
                    reactiveValuesToList(plotStyle))
@@ -339,7 +365,9 @@ runModel <- function(input, output, session, loadedFiles) {
         xVar = xVar,
         yName = getSelection(plotValues$dataSettings$yColumns)$colNames$colName1,
         quantile = quantile
-      )
+      ) %>%
+        tryCatchWithWarningsAndErrors(errorTitle = "Prediction failed", alertStyle = "shinyalert")
+
       return(data)
     }
   })

@@ -9,7 +9,7 @@ tagList(
         collapsible = TRUE,
         id = "tab",
         uploadFilesUI("files", "File Import(s)"),
-        runModelUI("model", "Run Model"),
+        runModelUI("model", "Plot Data & Run Model"),
         postProcessingUI("post", "Post Processing"),
         stylePlotUI("style", "Style Plot"),
         addMorePointsUI("addPoints", "Add Points"),

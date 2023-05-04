@@ -27,7 +27,7 @@ savePlot <- function(input, output, session, savedData, currentPlot){
   })
 
   observeEvent(input$saveActivePlot, {
-    req(currentPlot$plotValues$predictedData)
+    req(currentPlot$plotValues$defaultXRange)
 
     if (input$plotName == "") {
       shinyalert("Oops!", paste("Please enter a name to save this plot."),

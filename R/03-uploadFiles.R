@@ -8,7 +8,8 @@ uploadFilesUI <- function(id, title) {
            value = id,
            fluidRow(
              sidebarPanel(
-               style = "position:fixed; width:20%; max-width:350px; overflow-y:auto; height:88%",
+               style = "position:fixed; width:23%; max-width:500px; overflow-y:auto; height:88%",
+               width = 3,
                importDataUI(ns("data"), "Import Data"),
                tags$hr(),
                selectInput(
@@ -90,23 +91,7 @@ incIndexOfFile <- function(fileName) {
   # remove type
   fileName <- gsub(".[[:alnum:]]*$", "", fileName)
 
-  # extract index
-  currentIndex <-
-    regmatches(fileName, regexpr("\\([[:digit:]]+\\)$", fileName))
+  fileName <- incIndexOfName(fileName)
 
-  # inc index
-  if (length(currentIndex) == 0) {
-    paste0(fileName, "(1)", fileType)
-  } else {
-    # get new index
-    newIndex <- currentIndex %>%
-      gsub(pattern = "\\(|\\)",
-           replacement = "") %>%
-      as.numeric() + 1
-
-    # replace with new index
-    gsub("\\([[:digit:]]+\\)$" ,
-         paste0("(", newIndex, ")", fileType) ,
-         fileName)
-  }
+  paste0(fileName, fileType)
 }

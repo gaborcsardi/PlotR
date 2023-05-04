@@ -1,4 +1,5 @@
 predictData <- function(modelData, prepData, smoothConst, postProcessing = FALSE, ppValues = list()){
+  if (is.null(modelData)) stop("Cannot predict data! No model output found.")
     evenlyOnX <- predictSample(plotRModel = modelData,
                                xCol = prepData$X,
                                xVar = getXVarEvenly(m = prepData$X,
@@ -28,7 +29,7 @@ getXVarEvenly <- function(m, si, length = 100) {
 
 predictPipe <- function(plotRModel, xCol, yName = NULL, xVar = seq(0, 1, by = 0.1),
                          smoothConst = 1, quantile = 0.95, postProcessing = FALSE, ppValues = list()){
-
+  if (is.null(plotRModel)) stop("Cannot predict data! No model output found.")
   predictSample(plotRModel = plotRModel,
                 xCol = xCol, xVar = xVar,
                 postProcessing = postProcessing, ppValues = ppValues) %>%
