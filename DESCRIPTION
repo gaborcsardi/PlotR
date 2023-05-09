@@ -1,6 +1,6 @@
 Package: PlotR
 Title: Plot things
-Version: 23.03.4.1
+Version: 23.05.0
 Authors@R: c(
     person("Marcus", "Gross", email = "marcus.gross@inwt-statistics.de", role = c("aut", "cre")),
     person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
@@ -36,4 +36,4 @@ LazyData: true
 Suggests:
   lintr (>= 1.0.2),
   testthat
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3

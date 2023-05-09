@@ -1,5 +1,10 @@
 # PlotR app development version
 
+## Version 23.05.0
+
+### New Features
+- adds a legend to the all-in-one plot (#3)
+
 ## Version 23.03.4
 
 ### Updates

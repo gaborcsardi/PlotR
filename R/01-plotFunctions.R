@@ -1,6 +1,6 @@
 makeMultiPlot <- function(valuesList, nMarginLines, combiType = "rowGrid", nGridCols = 2,
                           xAxisToHide = NULL, yAxisToHide = NULL, showSig = FALSE,
-                          referencePlot = NULL, sigLevel = 0.95
+                          referencePlot = NULL, sigLevel = 0.95, legendPosition
                           ){
 
   if (is.null(names(valuesList))) return(NULL)
@@ -39,6 +39,14 @@ makeMultiPlot <- function(valuesList, nMarginLines, combiType = "rowGrid", nGrid
                hideYAxis = (p %in% yAxisToHide),
                marginLine = 3 * (i - 1))
     }
+
+    # add legend to multiplot
+      addLegendServer(
+              id = "joinedPlot",
+              position = legendPosition,
+              title = "Color for data points",
+              legendEntries = names(valuesList),
+              fillColor = unlist(lapply(valuesList, function(x) x$plotStyle$dataPoints$color)))
   }
 
   if(combiType == "fullGrid") {
@@ -411,4 +419,39 @@ cleanLabel <- function(dataColumns) {
 emptyPlot <- function(label = "No data available") {
   plot(0:1, 0:1, pch = NA, xlab = "", ylab = "")
   text(0.5, 0.5, label = label, col = "red")
+}
+
+
+
+#' selectInput to specify legend position
+#'
+#' @param id module id
+#' @param label label of button
+#' @param choices choices e.g. "bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" and "center"
+addLegendUI <- function(id, label = "Legend Position", choices = c("none", "topleft", "topright", "bottomright", "bottomleft")) {
+  ns <- NS(id)
+    selectizeInput(inputId = ns("legend"),
+                   label = label,
+                   choices = choices)
+}
+
+#' Add a legend to an existing plot
+#'
+#' @param id module id
+#' @param position legend position, e.g. "bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" and "center"
+#' @param title legend title
+#' @param legendEntries names of legend entries
+#' @param fillColor color for the legend symbols
+addLegendServer <- function(id, position, title, legendEntries, fillColor) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      if(position != "none"){
+      legend(x = position,
+             title = title,
+             legend = legendEntries,
+             fill = fillColor)
+      }
+    }
+  )
 }

@@ -426,7 +426,7 @@ stylePlot <- function(input, output, session, savedData) {
 }
 
 getLastSelected <- function(lastSelected, default) {
-  if_else(is.null(lastSelected),
+  ifelse(is.null(lastSelected),
           default,
           lastSelected)
 }
