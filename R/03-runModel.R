@@ -515,7 +515,9 @@ getPlotStyleDefaults <- function() {
       color = '#1D60BD',
       lineType = 4,
       lineWidth = 2,
-      hide = FALSE
+      hide = FALSE,
+      bandColor = "#1D60BD",
+      bandOpacity = 0.2
     ),
     # more points
     morePoints = list()

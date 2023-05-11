@@ -330,6 +330,8 @@ plotPredictions <- function(predData,
   uncertaintyLineType <- styleUncertainty$lineType
   uncertaintyWidth <- styleUncertainty$lineWidth
   uncertaintyHide <- styleUncertainty$hide
+  uncertaintyBandColor <- styleUncertainty$bandColor
+  uncertaintyBandOpacity <- styleUncertainty$bandOpacity
 
   plotRPred <- predData
 
@@ -361,22 +363,41 @@ plotPredictions <- function(predData,
     }
   }
 
+  upperValues <- getUncertaintyLimit(plotRPred,
+                                     type = errorType,
+                                     factor = uncertaintyFactor)$upper
+
+  lowerValues <- getUncertaintyLimit(plotRPred,
+                                     type = errorType,
+                                     factor = uncertaintyFactor)$lower
+
   plotLines(hide = uncertaintyHide,
-            getUncertaintyLimit(plotRPred,
-                                type = errorType,
-                                factor = uncertaintyFactor)$upper ~ plotRPred$xVar,
+            upperValues ~ plotRPred$xVar,
             lwd = uncertaintyWidth,
             lty = uncertaintyLineType,
             col = uncertaintyColor)
   plotLines(hide = uncertaintyHide,
-            getUncertaintyLimit(plotRPred,
-                                type = errorType,
-                                factor = uncertaintyFactor)$lower ~ plotRPred$xVar,
+            lowerValues ~ plotRPred$xVar,
             lwd = uncertaintyWidth,
             lty = uncertaintyLineType,
             col = uncertaintyColor)
+
+  # Add color band between model prediction uncertainty lines
+  polygon(c(plotRPred$xVar, rev(plotRPred$xVar), plotRPred$xVar[1]),
+          c(lowerValues, rev(upperValues), lowerValues[1]),
+          col = hex_with_opacity(hex = uncertaintyBandColor, opacity = uncertaintyBandOpacity))
+
   # lines((plotRPred$Estimation + 1.96 * plotRPred$SETOTAL) ~ plotRPred$xVar, lwd = 1, lty = 3)
   # lines((plotRPred$Estimation - 1.96 * plotRPred$SETOTAL) ~ plotRPred$xVar, lwd = 1, lty = 3)
+}
+
+#' Convert hex to hex with opacity
+#'
+#' @param hex color in hex format
+#' @param opacity opacity value between 0 and 1
+hex_with_opacity <- function(hex, opacity){
+  rgb_col <- col2rgb(hex)
+  rgb(rgb_col[1], rgb_col[2], rgb_col[3], opacity * 255, maxColorValue = 255)
 }
 
 plotLines <- function(hide, x, ...) {

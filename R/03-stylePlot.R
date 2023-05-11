@@ -207,11 +207,28 @@ stylePlotUI <- function(id, title) {
                      min = 0,
                      max = 20,
                      value = 2
+                   ),
+                   conditionalPanel(
+                     condition = "input.lineName == 'modelUncertainty'",
+                     ns = ns,
+                   colourInput(
+                     inputId = ns("uncertaintyBandColor"),
+                     label = "Uncertainty Band Color",
+                     value = '#1D60BD'
+                   ),
+                   numericInput(
+                     inputId = ns("uncertaintyBandOpacity"),
+                     label = "Uncertainty Band Opacity",
+                     min = 0,
+                     max = 1,
+                     value = 0.2,
+                     step = 0.1
                    )
                  )
                )
              )
-           ))
+            )
+          ))
 }
 
 #' @export
@@ -298,7 +315,11 @@ stylePlot <- function(input, output, session, savedData) {
     updateColourInput(session, "lineColor", value = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$color)
     updateSelectInput(session, "lineType", selected = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$lineType)
     updateSliderInput(session, "lineWidth", value = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$lineWidth)
-    updateCheckboxInput(session, "hideHide", value = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$hideHide)
+    updateCheckboxInput(session, "hideHide", value = activePlotStyle[[getLastSelected(lastSelected$line, "predictionLine")]]$hide)
+
+    # uncertainty band
+    updateColourInput(session, "uncertaintyBandColor", value = activePlotStyle$modelUncertainty$bandColor)
+    updateNumericInput(session, "uncertaintyBandOpacity", value = activePlotStyle$modelUncertainty$bandOpacity)
   })
 
   # activePlotStyle(changed label, point, line) >> inputs ####
@@ -371,7 +392,9 @@ stylePlot <- function(input, output, session, savedData) {
         color = input$lineColor,
         lineType = as.numeric(input$lineType),
         lineWidth = input$lineWidth,
-        hide = input$lineHide
+        hide = input$lineHide,
+        bandColor = input$uncertaintyBandColor,
+        bandOpacity = input$uncertaintyBandOpacity
       )
   })
 
