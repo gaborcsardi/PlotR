@@ -128,8 +128,7 @@ testthat::test_that("function getModelFit, predictData", {
                                           credPercent = NULL),
                         modelParameters = list(outlier = TRUE, outlierValue = 2,
                                                burnin = 1000L, iter = 5000L, nChains = 4L,
-                                               smoothConst = 1L, K = 25L, sdVar = FALSE, const = 2),
-                        isCheck = TRUE)
+                                               smoothConst = 1L, K = 25L, sdVar = FALSE, const = 2))
 
 
 

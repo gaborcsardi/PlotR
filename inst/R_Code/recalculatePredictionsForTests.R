@@ -31,8 +31,7 @@ predTestData <- lapply(combiInputs, function(i) {
                         list(colNames = i$xNames, type = i$xType),
                         list(colNames = i$yNames, type = i$yType),
                         modelOutlier = list(outlier = TRUE, outlierValue = 2),
-                        modelParameters = modelParameters,
-                        isCheck = TRUE)
+                        modelParameters = modelParameters)
 
   predictData(modelData$modelOutput,
               prepData = prepData,

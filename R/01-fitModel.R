@@ -53,8 +53,7 @@ fitModel <- function(plotValues,
 getModelFit <- function(data,
                         prepData,
                         xSelection, ySelection,
-                        modelParameters,
-                        isCheck = FALSE){
+                        modelParameters){
   modelOutput <- prepData %>%
     fitPlotRModelMC(K = modelParameters$K,
                     burnin = modelParameters$burnin,
@@ -63,8 +62,7 @@ getModelFit <- function(data,
                     smoothConst = modelParameters$smoothConst,
                     nChains = modelParameters$nChains,
                     sdVar = modelParameters$sdVar,
-                    progressMessage = "Calculating Model",
-                    isCheck = isCheck
+                    progressMessage = "Calculating Model"
     ) %>%
     tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed",
                                   warningTitle = "Warning",
@@ -101,8 +99,7 @@ getModelFit <- function(data,
         smoothConst = modelParameters$smoothConst,
         nChains = modelParameters$nChains,
         sdVar = modelParameters$sdVar,
-        progressMessage = "Removing model outliers",
-        isCheck = isCheck
+        progressMessage = "Removing model outliers"
       ) %>%
       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed",
                                     warningTitle = "Warning",
@@ -124,8 +121,7 @@ fitPlotRModelMC <- function(data,
                             smoothConst = 1,
                             nChains = 4,
                             sdVar = FALSE,
-                            progressMessage = "Calculating Model",
-                            isCheck = FALSE){
+                            progressMessage = "Calculating Model"){
   n <- nrow(data)
   if (n < K) {
     stop("Not enough rows for running the model. Please use more data rows, increase the sd for outlier removal or decrease the number of basis functions.")
@@ -142,8 +138,7 @@ fitPlotRModelMC <- function(data,
                   smoothConst = smoothConst,
                   nChains = x,
                   sdVar = sdVar,
-                  progressMessage = progressMessage,
-                  isCheck = isCheck)
+                  progressMessage = progressMessage)
   })
   res <- ret[[1]]
   res$beta <- do.call("rbind", lapply(1:length(ret), function(x) ret[[x]]$beta))
@@ -159,8 +154,7 @@ fitPlotRModel <- function(data,
                           smoothConst = 1,
                           nChains = 4,
                           sdVar = FALSE,
-                          progressMessage = "Calculating Model",
-                          isCheck = FALSE){
+                          progressMessage = "Calculating Model"){
 
   data$Date4 <- data$standardizedX
 
@@ -335,7 +329,7 @@ fitPlotRModel <- function(data,
     return(betamc)
   }
 
-  if (isCheck) {
+  if (!isRunning()) {
     for ( k in 1:10) {
       j <- seq(1, iter, iter / 10)[k]
       MCMCplotR(start = j, iter = j + iter / 10 - 1)

@@ -3,6 +3,11 @@
 ## Version 23.05.1
 
 ### New Features
+- data export contains quantile columns, the value of the selected quantile was added to those column names (#2)
+
+## Version 23.05.1
+
+### New Features
 - option to add bands between prediction uncertainty lines (#1)
 
 ## Version 23.05.0

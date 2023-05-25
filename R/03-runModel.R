@@ -352,24 +352,14 @@ runModel <- function(input, output, session, loadedFiles) {
   # export data ####
   dataFun <- reactive({
     req(plotValues$modelData)
-    function(xVar, quantile) {
-      prepData <- getPrepData(
-        data = plotValues$selectedData,
-        xSelection = getSelection(plotValues$dataSettings$xColumns),
-        ySelection = getSelection(plotValues$dataSettings$yColumns)
-      )
 
-      data <- predictPipe(
-        plotRModel = plotValues$modelData$modelOutput,
-        xCol = prepData$X,
-        xVar = xVar,
-        yName = getSelection(plotValues$dataSettings$yColumns)$colNames$colName1,
-        quantile = quantile
-      ) %>%
-        tryCatchWithWarningsAndErrors(errorTitle = "Prediction failed", alertStyle = "shinyalert")
-
-      return(data)
-    }
+    function(xVar, quantile) calcExportData(
+      xVar,
+      quantile,
+      data = plotValues$selectedData,
+      xSelection = getSelection(plotValues$dataSettings$xColumns),
+      ySelection = getSelection(plotValues$dataSettings$yColumns),
+      modelOutput = plotValues$modelData$modelOutput)
   })
 
   callModule(dataExport,
