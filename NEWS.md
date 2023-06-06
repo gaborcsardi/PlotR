@@ -1,6 +1,6 @@
 # PlotR app development version
 
-## Version 23.05.1
+## Version 23.05.2
 
 ### New Features
 - data export contains quantile columns, the value of the selected quantile was added to those column names (#2)
