@@ -19,16 +19,8 @@ selectDataWrapper <- function(plotValues, activeFile, activeFileData, dataSelect
   ySelection <- getSelection(plotValues$dataSettings$yColumns)
 
   plotValues$selectedData <-
-    activeFileData[, unlist(c(xSelection$colNames, ySelection$colNames))]
-
-  if (any(!sapply(plotValues$selectedData, is.numeric))) {
-    # transform to numeric
-    plotValues$selectedData <- toNumericCols(plotValues$selectedData)
-  }
-
-  if (!is.null(plotValues$selectedData) && any(is.na(plotValues$selectedData))) {
-    plotValues$selectedData <- na.omit(plotValues$selectedData)
-  }
+    activeFileData[, unlist(c(xSelection$colNames, ySelection$colNames))] %>%
+    asNumericWithoutNA()
 
   if (is.null(plotValues$selectedData)) return(plotValues)
 
@@ -46,6 +38,20 @@ selectDataWrapper <- function(plotValues, activeFile, activeFileData, dataSelect
   )
 
   plotValues
+}
+
+asNumericWithoutNA <- function(selectedData) {
+  if (any(!sapply(selectedData, is.numeric))) {
+    # transform to numeric
+    selectedData <- toNumericCols(selectedData)
+  }
+
+  if (!is.null(selectedData) && any(is.na(selectedData))) {
+    # removes NA values only from selected data
+    selectedData <- na.omit(selectedData)
+  }
+
+  selectedData
 }
 
 getPrepData <- function(data, xSelection, ySelection){
