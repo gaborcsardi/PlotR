@@ -62,7 +62,9 @@ multiplePlotsUI <- function(id, title) {
                    ),
                    conditionalPanel(condition = "input.combiType == 'joinedPlot'",
                                     ns = ns,
-                                    selectMarginUI(ns("margins")))
+                                    selectMarginUI(ns("margins")),
+                                    addLegendUI(ns("joinedPlot"))
+                   )
                  )
                ),
                tags$br(),
@@ -257,7 +259,6 @@ multiplePlots <- function(input, output, session, savedData) {
     nActivePlots() >= 2
   })
   outputOptions(output, "showSignifStatus", suspendWhenHidden = FALSE)
-
   output$multiPlot <- renderPlot({
     validate(
       need(names(activePlotsData()), "Select plots ...")
@@ -272,7 +273,8 @@ multiplePlots <- function(input, output, session, savedData) {
         yAxisToHide = input$yAxisToHide,
         showSig = input$showSignif,
         referencePlot = input$referencePlot,
-        sigLevel = input$sigLevel
+        sigLevel = input$sigLevel,
+        legendPosition = input[["joinedPlot-legend"]]
       )
     )
 

@@ -2,10 +2,10 @@
 #' @importFrom colourpicker colourInput updateColourInput
 #' @importFrom DataTools checkErrorNoNumericColumns checkWarningEmptyValues importDataUI
 #'  importDataServer remoteModelsUI remoteModelsServer tryCatchWithWarningsAndErrors
-#' @importFrom dplyr bind_cols bind_rows filter if_else mutate
+#' @importFrom dplyr bind_cols bind_rows filter mutate
 #' @importFrom DT DTOutput renderDT
-#' @importFrom graphics arrows axis box lines mtext par plot points rect text
-#' @importFrom grDevices dev.off pdf png recordPlot replayPlot rgb svg tiff
+#' @importFrom graphics arrows axis box lines mtext par plot points rect text legend polygon
+#' @importFrom grDevices dev.off pdf png recordPlot replayPlot rgb svg tiff col2rgb
 #' @importFrom jsonlite toJSON
 #' @importFrom magrittr %>%
 #' @importFrom mgcv Predict.matrix smoothCon s

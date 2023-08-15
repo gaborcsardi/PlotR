@@ -99,3 +99,36 @@ exportJSON <- function(file, dat){
   json <- toJSON(dat)
   write(json, file)
 }
+
+calcExportData <- function(xVar, quantile, data, xSelection, ySelection, modelOutput,
+                           renameQColumns = TRUE) {
+  prepData <- getPrepData(
+    data = data,
+    xSelection = xSelection,
+    ySelection = ySelection
+  )
+
+  data <- predictPipe(
+    plotRModel = modelOutput,
+    xCol = prepData$X,
+    xVar = xVar,
+    yName = ySelection$colNames$colName1,
+    quantile = quantile
+  ) %>%
+    tryCatchWithWarningsAndErrors(errorTitle = "Prediction failed", alertStyle = "shinyalert")
+
+  if (renameQColumns) {
+    # rename quantile columns
+    qPerc <- round(quantile * 100)
+
+    oldNames <- names(data)
+    newNames <- oldNames %>%
+      gsub(pattern = "Est_MEAN_Q_",
+           replacement = sprintf("Est_MEAN_%s_", qPerc)) %>%
+      gsub(pattern = "Est_Total_Q_",
+           replacement = sprintf("Est_Total_%s_", qPerc))
+    names(data) <- newNames
+  }
+
+  return(data)
+}

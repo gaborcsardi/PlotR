@@ -1,5 +1,27 @@
 # PlotR app development version
 
+## Version 23.08.0
+
+### Bug Fixes
+- fixes of "Predict Data" in the tab "Multible Predictions" (#40)
+  - fixing the update of the column choices when using uploaded data
+  - removing NA values for uploaded data
+
+## Version 23.05.2
+
+### New Features
+- data export contains quantile columns, the value of the selected quantile was added to those column names (#2)
+
+## Version 23.05.1
+
+### New Features
+- option to add bands between prediction uncertainty lines (#1)
+
+## Version 23.05.0
+
+### New Features
+- adds a legend to the all-in-one plot (#3)
+
 ## Version 23.03.4
 
 ### Updates

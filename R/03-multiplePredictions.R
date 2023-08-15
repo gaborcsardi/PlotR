@@ -26,6 +26,7 @@ multiplePredictionsUI <- function(id, title) {
                  tabPanel(
                    "Correlation of Model Estimates",
                    value = ns("correlationOfGraps"),
+                   # correlation of model estimates ####
                    fluidRow(
                      column(
                        6,
@@ -52,6 +53,7 @@ multiplePredictionsUI <- function(id, title) {
                  tabPanel(
                    "Predict Data",
                    value = ns("predictData"),
+                   # predict response ####
                    fluidRow(
                      column(
                        8,
@@ -320,18 +322,17 @@ multiplePredictions <-
       )
     })
 
-    activeFile <- reactive({
+    observe({
       req(names(loadedFiles()))
-      toNumericCols(loadedFiles()[[input$activeFile]])
-    })
+      activeFile(toNumericCols(loadedFiles()[[input$activeFile]]))
+    }) %>%
+      bindEvent(input$activeFile)
 
     moreXColumns <- callModule(
       selectColumns,
       id = "moreXUploaded",
-      colNames = reactive(colnames(toNumericCols(activeFile(
-      )))),
-      datSettings = reactiveVal(defaultColSelection(colnames(activeFile(
-      ))))
+      colNames = reactive(colnames(toNumericCols(activeFile()))),
+      datSettings = reactive(defaultColSelection(colnames(activeFile())))
     )
 
     observeEvent(input$predictYUploaded, {
@@ -341,7 +342,13 @@ multiplePredictions <-
       checkReq(activeFile(), label = "Please select data from a file.")
       req(activeFile())
 
-      moreXUploaded(getPrepDataPart(activeFile(), getSelection(moreXColumns()), part = "X"))
+      xSelection <- getSelection(moreXColumns())
+
+      preparedData <- activeFile()[, unlist(c(xSelection$colNames))] %>%
+        asNumericWithoutNA() %>%                   # removes NA
+        getPrepDataPart(xSelection, part = "X")    # adds new columns
+
+      moreXUploaded(preparedData)
 
       checkReq(moreXUploaded()$X, label = "Please provide input values.")
       req(moreXUploaded()$X)
