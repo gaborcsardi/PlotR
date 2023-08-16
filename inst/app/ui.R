@@ -15,7 +15,8 @@ tagList(
         addMorePointsUI("addPoints", "Add Points"),
         downUploadsUI("downUpload", "Down-/Upload"),
         multiplePlotsUI("multiple", "Multiple Plots"),
-        multiplePredictionsUI("multiplePreds", "Multiple Predictions")
+        multiplePredictionsUI("multiplePreds", "Multiple Predictions"),
+        goodnessOfFitUI("goodness", "Goodness of Fit")
     ),
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")

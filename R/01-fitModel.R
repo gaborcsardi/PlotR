@@ -144,6 +144,8 @@ fitPlotRModelMC <- function(data,
   res$beta <- do.call("rbind", lapply(1:length(ret), function(x) ret[[x]]$beta))
   res$betaSigma <- do.call("rbind", lapply(1:length(ret), function(x) ret[[x]]$betaSigma))
   res$sigma <- do.call("c", lapply(1:length(ret), function(x) ret[[x]]$sigma))
+  res$llog <- do.call("cbind", lapply(1:length(ret), function(x) ret[[x]]$llog))
+  res$edf <- sum(apply(res$llog,1, var))
   return(res)
 }
 
@@ -193,6 +195,9 @@ fitPlotRModel <- function(data,
 
   lam <- 1E-5
   beta <- rep(0, ncol(XX))
+
+  # Keep current XX in XX2. XX2: matrix on the original X-values
+  # XX will be changed X-values when there is uncertainty
   XX2 <- XX
 
   if (sdVar){
@@ -357,6 +362,7 @@ fitPlotRModel <- function(data,
   #Vektor der tatsaechlich benutzten Beobachtungen
   usedsamples <- seq(from = burnin, to = iter, by = every)
   if (sdVar){
+    # XX2: matrix on the original X-values
     seTotal <- range(sqrt(apply(sapply(1:length(usedsamples), function(x)
       (XX2 %*% betamc[usedsamples[x], ]) * sRe + mRe), 1, var) +
         rowMeans(sapply(1:length(usedsamples), function(x)
@@ -366,12 +372,19 @@ fitPlotRModel <- function(data,
   } else {
     betamcSigma <- NULL
     seTotal <- range(sqrt(apply(sapply(1:length(usedsamples), function(x)
-      (XX %*% betamc[usedsamples[x], ]) * sRe + mRe), 1, var) + mean(smc)))
+      (XX2 %*% betamc[usedsamples[x], ]) * sRe + mRe), 1, var) + mean(smc)))
   }
+
+  llog <- getLLog(matrixDiff = YMean - (XX2 %*% t(betamc[usedsamples, ])),
+                  XX = XX2,
+                  betamcSigma = betamcSigma,
+                  smcSmpls = smc[usedsamples],
+                  sdVar = sdVar)
 
   list(beta = betamc[usedsamples, ], betaSigma = betamcSigma,
        sc = s, sigma = smc[usedsamples, ],
        mRe = mRe, sRe = sRe,
+       llog = llog,
        range = list(mean = range(rowMeans(sapply(1:length(usedsamples), function(x)
          (XX2 %*% betamc[usedsamples[x], ]) * sRe + mRe))),
          se = range(sqrt(apply(sapply(1:length(usedsamples), function(x)
@@ -416,4 +429,23 @@ cpostX <- function(XX,
   #   min = xobs - sqrt(sigma.obs),
   #   max = xobs + sqrt(sigma.obs)
   # ))
+}
+
+#' Get LLog
+#'
+#' Log likelihood computation for (W)AIC
+#'
+#' @param matrixDiff (matrix) matrix difference
+#' @param XX (matrix) design matrix
+#' @param betamcSigma (matrix) coefficients of varying standard deviation spline
+#' @param smcSmpls (numeric)  sigmas of MC samples
+#' @param sdVar (logical) TRUE if variable standard deviation
+getLLog <- function(matrixDiff, XX, betamcSigma, smcSmpls, sdVar) {
+  if (sdVar){
+    sigmaMC <- exp((XX %*% t(betamcSigma))) / smcSmpls
+  } else {
+    sigmaMC <- smcSmpls
+  }
+
+  -0.5 * matrixDiff^2 / sigmaMC - 0.5 * log(2*pi) - 0.5 * log(sigmaMC)
 }

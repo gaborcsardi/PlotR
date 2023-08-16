@@ -12,4 +12,5 @@ function (input, output, session) {
   callModule(multiplePlots, "multiple", savedData = savedPlots)
   callModule(multiplePredictions, "multiplePreds", savedData = savedPlots,
              loadedFiles = loadedFiles)
+  callModule(goodnessOfFit, "goodness", savedData = savedPlots)
 }
