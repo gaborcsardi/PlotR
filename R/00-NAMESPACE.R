@@ -1,7 +1,7 @@
 #' @import shiny
 #' @importFrom colourpicker colourInput updateColourInput
-#' @importFrom DataTools checkErrorNoNumericColumns checkWarningEmptyValues importDataUI
-#'  importDataServer remoteModelsUI remoteModelsServer tryCatchWithWarningsAndErrors
+#' @importFrom DataTools checkErrorNoNumericColumns checkWarningEmptyValues downloadModelUI
+#'  downloadModelServer importDataUI importDataServer tryCatchWithWarningsAndErrors
 #' @importFrom dplyr bind_cols bind_rows filter mutate
 #' @importFrom DT DTOutput renderDT
 #' @importFrom graphics arrows axis box lines mtext par plot points rect text legend polygon

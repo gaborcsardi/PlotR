@@ -1,5 +1,11 @@
 # PlotR app development version
 
+## Version 23.09.0
+
+### New Features
+- _Import of models_:
+  - option to import models from Pandora platform
+  
 ## Version 23.08.1
 
 ### New Features

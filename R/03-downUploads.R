@@ -17,10 +17,12 @@ downUploadsUI <- function(id, title) {
                ),
                tags$hr(),
                # Export saved models ####
-               downloadModelUI(id = ns("modelDownload"),
-                               label = "Download plot object(s)"),
-               uploadModelUI(id = ns("modelUpload"),
-                             label = "Upload plot object(s)")
+               importDataUI(ns("modelUpload"), label = "Import Plot"),
+               tags$hr(),
+               selectInput(ns("selectedModels"), label = "Download plot object(s)",
+                           choices = c("Save or upload plots ..." = ""),
+                           multiple = T),
+               downloadModelUI(ns("modelDownload"), label = "Download")
              ),
              mainPanel(width = 8,
                        fluidRow(
@@ -38,17 +40,16 @@ downUploadsUI <- function(id, title) {
 #' @rdname shinyModule
 #' @param savedData (reactive) list of saved data
 #' @param loadedFiles (reactive) list of uploaded files
+#' @param config (list) list with configuration parameters
 downUploads <-
   function(input,
            output,
            session,
            savedData,
-           loadedFiles) {
+           loadedFiles,
+           config) {
     activePlotValues <- getPlotValuesDefaults()
     activePlotStyle <- getPlotStyleDefaults()
-    morePoints <- reactiveVal(list())
-
-    oneMorePoint <- callModule(addPoints, id = "morePoints")
 
     observe({
       req(names(savedData()))
@@ -72,15 +73,6 @@ downUploads <-
         activePlotStyle[[i]] <-
           savedData()[[input$activePlot]]$plotStyle[[i]]
       }
-
-      morePoints(activePlotStyle$morePoints)
-
-      updateSelectInput(
-        session,
-        "activePoint",
-        choices = names(morePoints()),
-        selected = names(morePoints())[length(morePoints())]
-      )
     })
 
     # render plot ####
@@ -102,20 +94,86 @@ downUploads <-
     })
 
     # down/upload saved plot ####
+    observe({
+      updateSelectInput(session, "selectedModels", choices = names(savedData()),
+                        selected = names(savedData())[length(savedData())])
+    })
+
     uploadedNotes <- reactiveVal(NULL)
-    callModule(
-      downloadModel,
-      id = "modelDownload",
-      savedData = savedData,
-      uploadedNotes = uploadedNotes
-    )
-    callModule(
-      uploadModel,
-      id = "modelUpload",
-      loadedFiles = loadedFiles,
-      savedData = savedData,
-      uploadedNotes = uploadedNotes
-    )
+    downloadModelServer("modelDownload",
+                        dat = reactive(savedData()[input$selectedModels] %>%
+                                         removeModelOutputs()),
+                        inputs = reactiveValues(),
+                        model = reactive(savedData()[input$selectedModels] %>%
+                                           extractModelOutputs()),
+                        rPackageName = config$rPackageName,
+                        fileExtension = config$fileExtension,
+                        modelNotes = uploadedNotes,
+                        triggerUpdate = reactive(TRUE))
+
+    uploadedValues <- importDataServer("modelUpload",
+                                       title = "Import Model",
+                                       defaultSource = config$defaultSourceModel,
+                                       importType = "model",
+                                       rPackageName = config$rPackageName,
+                                       ignoreWarnings = TRUE,
+                                       fileExtension = config$fileExtension)
+
+
+    observe({
+      req(length(uploadedValues()) > 0)
+      # update notes in tab down-/upload ----
+      uploadedNotes(uploadedValues()[[1]][["notes"]])
+
+      # prepare model object(s)
+      uploadedData <- extractSavedModels(upload = uploadedValues()[[1]])
+
+      # rename model if name already exists
+      if (any(names(uploadedData) %in% names(savedData()))) {
+                nameExists <- which(names(uploadedData) %in% names(savedData()))
+                shinyalert(
+                  title = "Duplicated plot names",
+                  text = paste(
+                    "Plot name\n",
+                    paste(names(uploadedData)[nameExists], collapse = ", "),
+                    "\n already exist and was updated."
+                  ),
+                  type = "warning"
+                )
+
+                # rename duplicated plot names
+                newNames <- names(uploadedData)
+                while (any(newNames %in% names(savedData()))) {
+                  nameExists <- which(newNames %in% names(savedData()))
+                  newNames[nameExists] <- lapply(newNames[nameExists], incIndexOfName)
+                  names(uploadedData) <- newNames
+                }
+      }
+
+      # prepare data file(s)
+      uploadedFileNames <- c()
+      for (plot in names(uploadedData)) {
+        newFileName <- uploadedData[[plot]]$plotValues$activeFile
+
+        # rename duplicated files
+        while (any(newFileName == names(loadedFiles()))) {
+          newFileName <- incIndexOfFile(newFileName)
+          uploadedData[[plot]]$plotValues$activeFile <- newFileName
+        }
+
+        uploadedFileNames <- c(uploadedFileNames, newFileName)
+      }
+
+      uploadedFiles <- lapply(names(uploadedData), function(plot){
+        uploadedData[[plot]]$plotValues$activeFileData
+      })
+      uploadedFiles <- setNames(uploadedFiles, uploadedFileNames)
+
+      # load data files and models ----
+      loadedFiles(c(loadedFiles(), uploadedFiles[unique(unlist(uploadedFileNames))]))
+      savedData(c(savedData(), uploadedData))
+    }) %>%
+      bindEvent(uploadedValues())
 
     # dataFun <- reactive({
     #   req(input$activePlot)
