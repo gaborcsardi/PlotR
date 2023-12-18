@@ -1,5 +1,11 @@
 # PlotR app development version
 
+## Version: 23.12.0
+
+### New Features
+- _Import of models_: display of "About" information that is associated to a selected Pandora 
+  Repository
+
 ## Version 23.09.0
 
 ### New Features
