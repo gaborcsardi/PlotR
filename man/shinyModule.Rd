@@ -49,7 +49,7 @@ addMorePoints(input, output, session, savedData)
 
 downUploadsUI(id, title)
 
-downUploads(input, output, session, savedData, loadedFiles, config)
+downUploads(input, output, session, savedData, loadedFiles)
 
 goodnessOfFitUI(id, title)
 
@@ -77,7 +77,7 @@ stylePlot(input, output, session, savedData)
 
 uploadFilesUI(id, title)
 
-uploadFiles(input, output, session, config)
+uploadFiles(input, output, session)
 }
 \arguments{
 \item{id}{namespace id}
@@ -97,8 +97,6 @@ uploadFiles(input, output, session, config)
 \item{title}{title of tab in tabset panel}
 
 \item{loadedFiles}{(reactive) list of uploaded files}
-
-\item{config}{(list) list with configuration parameters}
 }
 \description{
 Server and UI Functions for Shiny Module

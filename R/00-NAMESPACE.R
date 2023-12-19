@@ -15,9 +15,9 @@
 #' @importFrom shinyjs useShinyjs
 #' @importFrom stats cor density dunif na.omit pnorm rnorm rgamma runif sd setNames var median qnorm
 #' @importFrom tibble tribble
-#' @importFrom utils head packageVersion write.table
-#' @importFrom openxlsx read.xlsx write.xlsx
-#' @importFrom zip zipr
+#' @importFrom utils write.table
+#' @importFrom openxlsx write.xlsx
+#' @importFrom yaml read_yaml
 NULL
 
 #' Server and UI Functions for Shiny Module

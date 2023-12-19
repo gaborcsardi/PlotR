@@ -1,4 +1,4 @@
-# PlotR app development version
+# PlotR app
 
 ## Version: 23.12.0
 
@@ -80,20 +80,20 @@ of plots is triggered correctly
   - use "file" as default source in _Import Data_
 - now, sidebars are fixed with auto scroll in all tabs (iso-app #4)
 
-## PlotR 23.01.1
+## Version 23.01.1
 
 ### New Features
 - show significant differences of the mean between a reference plot and one (or more) other 
 plots (#19)
 
-## PlotR 22.12.1
+## Version 22.12.1
 
 ### Updates
 - added placeholders to several select inputs as long as data is missing (#14)
 - rename tab "File Upload(s)" to "File Import(s)" for more consistency with the placeholders
 - tab "Style plot": add numeric inputs to sliders for the plot ranges (#13)
 
-## PlotR 22.11.1
+## Version 22.11.1
 
 ### New Features
 - button to export the plot in "Run Model" tab (#9) and in "Post Processing" tab

@@ -27,8 +27,7 @@ uploadFilesUI <- function(id, title) {
 
 #' @export
 #' @rdname shinyModule
-#' @param config (list) list with configuration parameters
-uploadFiles <- function(input, output, session, config) {
+uploadFiles <- function(input, output, session) {
   loadedFiles <- reactiveVal(list())
   activeFile <- reactiveVal(NULL)
 
@@ -37,8 +36,9 @@ uploadFiles <- function(input, output, session, config) {
     customWarningChecks = list(reactive(checkWarningEmptyValues)),
     customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
     ignoreWarnings = TRUE,
-    defaultSource = config$defaultSourceData,
-    rPackageName = config$rPackageName
+    defaultSource = config()[["defaultSourceData"]],
+    ckanFileTypes = config()[["ckanFileTypes"]],
+    rPackageName = config()[["rPackageName"]]
   )
 
   observe({

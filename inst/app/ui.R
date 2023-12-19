@@ -3,6 +3,7 @@ library("shiny")
 
 tagList(
     navbarPage(
+        header = includeCSS("www/custom.css"),
         title = paste("PlotR", packageVersion("PlotR")),
         theme = shinythemes::shinytheme("flatly"),
         position = "fixed-top",
@@ -18,8 +19,27 @@ tagList(
         multiplePredictionsUI("multiplePreds", "Multiple Predictions"),
         goodnessOfFitUI("goodness", "Goodness of Fit")
     ),
-    tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
+    div(
+      id = "header-right",
+      div(
+        id = "logo-mpi",
+        tags$a(href = "https://www.mpg.de/en",
+               img(src = "MPIlogo.png", alt = "Supported by the Max Planck society"),
+               target = "_blank"
+        )
+      ),
+      div(
+        id = "logo-isomemo",
+        tags$a(href = "https://isomemo.com/",
+               img(src = "IsoMemoLogo.png", alt = "IsoMemo"),
+               target = "_blank"
+        )
+      ),
+      div(
+        id = "help",
+        actionButton("getHelp", "?")
+      )
     ),
+    shinyjs::useShinyjs()
 )
 

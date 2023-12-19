@@ -40,14 +40,12 @@ downUploadsUI <- function(id, title) {
 #' @rdname shinyModule
 #' @param savedData (reactive) list of saved data
 #' @param loadedFiles (reactive) list of uploaded files
-#' @param config (list) list with configuration parameters
 downUploads <-
   function(input,
            output,
            session,
            savedData,
-           loadedFiles,
-           config) {
+           loadedFiles) {
     activePlotValues <- getPlotValuesDefaults()
     activePlotStyle <- getPlotStyleDefaults()
 
@@ -106,18 +104,20 @@ downUploads <-
                         inputs = reactiveValues(),
                         model = reactive(savedData()[input$selectedModels] %>%
                                            extractModelOutputs()),
-                        rPackageName = config$rPackageName,
-                        fileExtension = config$fileExtension,
+                        rPackageName = config()[["rPackageName"]],
+                        fileExtension = config()[["fileExtension"]],
                         modelNotes = uploadedNotes,
                         triggerUpdate = reactive(TRUE))
 
     uploadedValues <- importDataServer("modelUpload",
                                        title = "Import Model",
-                                       defaultSource = config$defaultSourceModel,
                                        importType = "model",
-                                       rPackageName = config$rPackageName,
+                                       ckanFileTypes = config()[["ckanModelTypes"]],
                                        ignoreWarnings = TRUE,
-                                       fileExtension = config$fileExtension)
+                                       defaultSource = config()[["defaultSourceModel"]],
+                                       mainFolder = config()[["mainFolder"]],
+                                       fileExtension = config()[["fileExtension"]],
+                                       rPackageName = config()[["rPackageName"]])
 
 
     observe({
