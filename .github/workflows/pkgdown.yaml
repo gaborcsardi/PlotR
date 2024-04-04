@@ -32,6 +32,11 @@ jobs:
           extra-repositories: |
             https://Pandora-IsoMemo.github.io/drat/
 
+      - name: Debug repos
+        run: |
+          writeLines(readLines("~/.Rprofile"))
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: |
