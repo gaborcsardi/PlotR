@@ -10,8 +10,6 @@ Authors@R: c(
 Maintainer: Marcus Gross <marcus.gross@inwt-statistics.de>
 Description: Plot things.
 Depends: R (>= 3.5.0)
-Remotes:
-  github::ben-aaron188/rgpt3
 Imports:
   colourpicker,
   DataTools (>= 23.06.0.1),
