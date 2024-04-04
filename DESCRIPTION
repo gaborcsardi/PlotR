@@ -36,3 +36,4 @@ Suggests:
   testthat
 RoxygenNote: 7.2.3
 URL: https://pandora-isomemo.github.io/PlotR/
+Additional_repositories: https://Pandora-IsoMemo.github.io/drat/
