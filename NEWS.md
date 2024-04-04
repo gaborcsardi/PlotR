@@ -1,5 +1,10 @@
 # PlotR app development version
 
+## Version 24.04.0
+
+- add pkgdown documentation via gh-actions
+- add r-cmd check via gh-actions
+- rm rgpt3 from remotes package
 ## Version 23.08.0
 
 ### Bug Fixes
