@@ -9,7 +9,6 @@ Authors@R: c(
     )
 Maintainer: Marcus Gross <marcus.gross@inwt-statistics.de>
 Description: Plot things.
-Depends: R (>= 3.5.0)
 Imports:
   colourpicker,
   DataTools (>= 23.12.2),
@@ -36,4 +35,3 @@ Suggests:
   testthat
 RoxygenNote: 7.2.3
 URL: https://pandora-isomemo.github.io/PlotR/
-Additional_repositories: https://Pandora-IsoMemo.github.io/drat/
