@@ -47,6 +47,7 @@ jobs:
       - name: Test repos
         if: always()
         run: |
+          getOption("repos")
           pak::repo_status()
           pak::repo_status()$url
           pak::meta_list("DataTools")
